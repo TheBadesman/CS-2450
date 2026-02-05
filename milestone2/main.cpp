@@ -11,7 +11,7 @@ int main() {
 	while (file >> input_val) { //could do a for loop then have it check if the statement was true per iter. but that seems more inefficient than this
 		memory[i++] = input_val;//inserts values at i then increments after,
 		cout << memory[--i] << endl;
-	}
+	}//next first steps, read top instruction, ex: 1007, so read(10) input into location 07, 
 
 	
 	return 0;
