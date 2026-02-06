@@ -73,7 +73,8 @@ void BRANCHZERO(){
 void reader(std::string fileName){
 
     string memory[100] {};
-    int accumulator;
+    int accumulator{};
+    int address{};
 
     //opens the file
     ifstream ML(fileName);
@@ -86,28 +87,56 @@ void reader(std::string fileName){
     //creating a string for input into the UVSim
     string line;
 
-    //reads the contents of the file one line at a time, spliting off the command and what word is attached
+    //reads the file into the memory
     while (ML >> line){
-        string command = line.substr(1, 2);
 
-        //if else block to run different commands based off of the input read
-        if (command == "10"){READ();}
-        else if (command == "11"){WRITE();}
-        else if (command == "20"){LOAD();}
-        else if (command == "21"){STORE();}
-        else if (command == "30"){ADD();}
-        else if (command == "31"){SUBTRACT();}
-        else if (command == "32"){DIVIDE();}
-        else if (command == "33"){MULTIPLY();}
-        else if (command == "40"){BRANCH();}
-        else if (command == "41"){BRANCHNEG();}
-        else if (command == "42"){BRANCHZERO();}
-        else if (command == "43"){
-            //closes the file
-            ML.close();
+        //reading the line into the memory
+        memory[address] = line;
 
-            //because there is no more cases it now leaves the function
-        }   
+        //moves to the next slot in the array
+        address++;
+    }
+    
+    //resets address to its base value of zero
+
+    address = 0;
+
+    //reads the contents of the file one line at a time, spliting off the command and what word is attached
+    while (true){
+        string command = memory[address].substr(1, 2);
+
+        //try catch block in case for some reason halt is never called
+        try
+        {
+            if (address == 100)
+            {
+                throw 505;
+            }
+
+            if (command == "10"){READ();}
+            else if (command == "11"){WRITE();}
+            else if (command == "20"){LOAD();}
+            else if (command == "21"){STORE();}
+            else if (command == "30"){ADD();}
+            else if (command == "31"){SUBTRACT();}
+            else if (command == "32"){DIVIDE();}
+            else if (command == "33"){MULTIPLY();}
+            else if (command == "40"){BRANCH();}
+            else if (command == "41"){BRANCHNEG();}
+            else if (command == "42"){BRANCHZERO();}
+            else if (command == "43"){
+                //breaks the while true, leaving the loop if halt (command 43) is called
+                break;
+            }
+        }
+        catch(int e)
+        {
+            cout << '\n' <<"Error! Halt never called! Please check the file and try again!" << '\n';
+            break;
+        }
+        
+        address++;
+        
     }
 }
 
