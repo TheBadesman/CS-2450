@@ -6,6 +6,7 @@ Created: 01/28/2026
 */
 
 //includes for the project
+#include "mathTests.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -35,23 +36,33 @@ void STORE(){
 };
 
 //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
-void ADD(){
-    
+int ADD(int accum, string memory[100], string location) {
+    //I need to VALIDATE INPUT ON EACH MATH FUNCTION AND MAKE ERROR HANDLING FOR THAT
+    int location_integer = stoi(location);
+    int to_return = accum + stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
-void SUBTRACT(){
-    
+int SUBTRACT(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum - stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Divides the word in the accumulator by a word from a specific location in memory (leaves the result in the accumulator).
-void DIVIDE(){
+int DIVIDE(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum / stoi(memory[location_integer]);
+    return to_return;
 
 };
 
 //multiplys a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator).
-void MULTIPLY(){
-    
+int MULTIPLY(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum * stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Branchs to a specific location in memory
@@ -73,7 +84,7 @@ void BRANCHZERO(){
 void reader(std::string fileName){
 
     string memory[100] {};
-    int accumulator;
+    int accumulator{};
 
     //opens the file
     ifstream ML(fileName);
@@ -95,10 +106,10 @@ void reader(std::string fileName){
         else if (command == "11"){WRITE();}
         else if (command == "20"){LOAD();}
         else if (command == "21"){STORE();}
-        else if (command == "30"){ADD();}
-        else if (command == "31"){SUBTRACT();}
-        else if (command == "32"){DIVIDE();}
-        else if (command == "33"){MULTIPLY();}
+        else if (command == "30"){accumulator = ADD(accumulator, memory, line.substr(3,2));}
+        else if (command == "31"){accumulator = SUBTRACT(accumulator, memory, line.substr(3, 2)); }
+        else if (command == "32"){accumulator = DIVIDE(accumulator, memory, line.substr(3,2));}
+        else if (command == "33"){accumulator = MULTIPLY(accumulator, memory, line.substr(3, 2)); }
         else if (command == "40"){BRANCH();}
         else if (command == "41"){BRANCHNEG();}
         else if (command == "42"){BRANCHZERO();}
@@ -111,7 +122,7 @@ void reader(std::string fileName){
     }
 }
 
-int main()
+/*int main()
 {
     //variable for the file name
     string filename;
@@ -123,4 +134,4 @@ int main()
     reader(filename);
     
     return 0;
-}
+}*/
