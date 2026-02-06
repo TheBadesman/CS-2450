@@ -31,10 +31,22 @@ void print_vec(std::vector<int> &arr){
 }
 
 void read(std::vector<int> &arr, int index){//reference to vector
-	std::string input;
-	std::cout << "Input the four digit word you want, if data insert opcode 00 then the number you wish thats two digits so if i wanted 69, 0069, if negative 69, -0069: " << std::endl;
-	std::cin >> input;
-	arr[index] = std::stoi(input);
+	try{
+		std::string input;
+		std::cout << "Input the four digit word you want, if data insert opcode 00 then the number you wish thats two digits so if i wanted 69, 0069, if negative 69, -0069: " << std::endl;
+		std::cin >> input;
+		if (input.length() > 5 || input.length() < 4){//length can only be 4 or 5 characters long
+			throw std::out_of_range("");
+		}
+		arr[index] = std::stoi(input);
+	}catch(const std::invalid_argument& e){//reference so you dont copy the exception object, didnt know that helped perforance but good shit ig
+		std::cout << "You didnt enter a number at all..." << std::endl;
+	}catch(const std::out_of_range& e){
+		std::cout << "You inputed a number greater than length five(number 4 digits but 5 for potential sign ie -0099)"  << std::endl;
+	}
+	catch(...){
+		std::cout << "Unknown issue :(" << std::endl;
+	}
 }
 
 int main() {
