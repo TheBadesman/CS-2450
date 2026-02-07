@@ -9,6 +9,9 @@ Created: 01/28/2026
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <cstdlib>
+
 
 //using name space std to make coding easier
 using namespace std;
