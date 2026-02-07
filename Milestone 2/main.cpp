@@ -9,19 +9,16 @@ Created: 01/28/2026
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <iostream>
 
 //using name space std to make coding easier
 using namespace std;
 
-int get(string memory[100], int memory_address){//helper with error checking so you dont have to do that try catch on every get of the memory array or vector.
-        try{
-                return memory[100].at(memory_address);
-        }catch(out_of_range& e){
-                cout << e.what() << std::endl;
-                exit(1);
-                return 0;
-        }
+string get(string memory[100], int memory_address){
+    if (memory_address < 0 || memory_address >= 100) {
+        cout << "Memory access out of bounds!" << endl;
+        exit(1);
+    }
+    return memory[memory_address];
 }
 
 
@@ -55,7 +52,7 @@ void READ(string memory[100], int memory_address){
 }
 
 void WRITE(string memory[100], int memory_address){
-        std::cout << get(memory, memory_address) << std::endl;
+    cout << get(memory, memory_address) << endl;
 }
 
 //Loads a word from a specific location in memory into the accumulator
@@ -69,23 +66,33 @@ void STORE(){
 };
 
 //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
-void ADD(){
-    
+int ADD(int accum, string memory[100], string memory_address) {
+    //I need to VALIDATE INPUT ON EACH MATH FUNCTION AND MAKE ERROR HANDLING FOR THAT
+    int location_integer = stoi(memory_address);
+    int to_return = accum + stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
-void SUBTRACT(){
-    
+int SUBTRACT(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum - stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Divides the word in the accumulator by a word from a specific location in memory (leaves the result in the accumulator).
-void DIVIDE(){
+int DIVIDE(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum / stoi(memory[location_integer]);
+    return to_return;
 
 };
 
 //multiplys a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator).
-void MULTIPLY(){
-    
+int MULTIPLY(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum * stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Branchs to a specific location in memory
@@ -127,20 +134,21 @@ void reader(std::string fileName){
 
     //makes sure the file is open
     if (!ML.is_open()) {
-        runtime_error("Error! File is not open!");
+        throw runtime_error("Error! File is not open!");
     }
 
     //creating a string for input into the UVSim
     string line;
 
-    //reads the file into the memory
     while (ML >> line){
-
-        //reading the line into the memory
-        memory[address] = line;
-
-        //moves to the next slot in the array
-        address++;
+        //exits the program if the file input is too large for memory
+        if (address >= 100){
+            cout << "Program too large for memory!" << endl;
+            exit(1);
+        }
+    
+        //adds the line to the memory and increases the address
+        memory[address++] = line;
     }
     
     //resets address to its base value of zero
@@ -164,13 +172,13 @@ void reader(std::string fileName){
             else if (command == "11"){WRITE(memory, stoi(memory[address].substr(3,2)));}
             else if (command == "20"){LOAD();}
             else if (command == "21"){STORE();}
-            else if (command == "30"){ADD();}
-            else if (command == "31"){SUBTRACT();}
-            else if (command == "32"){DIVIDE();}
-            else if (command == "33"){MULTIPLY();}
+            else if (command == "30"){accumulator = ADD(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "31"){accumulator = SUBTRACT(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "32"){accumulator = DIVIDE(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "33"){accumulator = MULTIPLY(accumulator, memory, memory[address].substr(3,2));}
             else if (command == "40"){address = BRANCH(stoi(memory[address].substr(3,2)));}
-            else if (command == "41"){BRANCHNEG(address, stoi(memory[address].substr(3,2)));}
-            else if (command == "42"){BRANCHZERO(address, stoi(memory[address].substr(3,2)));}
+            else if (command == "41"){BRANCHNEG(accumulator, address, stoi(memory[address].substr(3,2)));}
+            else if (command == "42"){BRANCHZERO(accumulator, address, stoi(memory[address].substr(3,2)));}
             else if (command == "43"){
                 //breaks the while true, leaving the loop if halt (command 43) is called
                 break;
