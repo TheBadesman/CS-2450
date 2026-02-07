@@ -32,7 +32,7 @@ int get(std::vector<int> &arr, int index){//helper with error checking so you do
 void read(std::vector<int> &arr, int index){
         try{
                 std::string input;
-                std::cout << "Input the sign + or - then the four digit word you want, if data insert opcode 00 then the number you wish thats two digits so if i wanted 69, +0069, if negative 69, -0069: " << std::endl;
+                std::cout << "Input the sign + or - then the four digit word you want, ex -0069: " << std::endl;
                 std::cin >> input;
                 char sign[2] = {'-', '+'};
                 if (input.length() != 5){//length can only be 5 characters long
@@ -151,7 +151,8 @@ void reader(std::string fileName){
                 throw 505;
             }
 
-            if (command == "10"){READ();}
+            if (command == "10"){READ();}//this works ofc, switch case is better though at least performance wise, instead of checking every condition up to the correct one
+                    //it just matches the correct option by key, just looked this up: some compilers use a jump table if many ints, if sparse ints itll generate a binary search tree to match keys
             else if (command == "11"){WRITE();}
             else if (command == "20"){LOAD();}
             else if (command == "21"){STORE();}
