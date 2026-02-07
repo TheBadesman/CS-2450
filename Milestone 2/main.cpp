@@ -16,6 +16,12 @@ Created: 01/28/2026
 //using name space std to make coding easier
 using namespace std;
 
+//FIXME: I think we should declare the acccumulator, address, and memory as global, since it'll keep the data accessible to all the existing functions
+/*
+int accumulator;
+int address;
+string memory[100];
+ */
 
 int get(std::vector<int> &arr, int index){//helper with error checking so you dont have to do that try catch shit on every get of the memory array or vector, whatever.
         try{
@@ -63,13 +69,19 @@ void write(std::vector<int> &arr, int index){//idk why its called write, it writ
 }
 
 //Loads a word from a specific location in memory into the accumulator
+//FIXME: This function isn't accessing the accumulator, address, and memory variables, I put commented notes and fixes in reader(), and at the top
 void LOAD(){
-    
+        int operand = stoi(memory[address].substr(3,2));
+        accumulator = stoi(memory[operand]);
 };
 
 //Stores a word from the accumulator into a specific location in memory
+//FIXME: Ditto the note for LOAD()
 void STORE(){
-    
+        int operand = stoi(memory[address].substr(3,2));
+        string val = (accumulator >= 0 ? "+" : "") + to_string(accumulator);
+        while (val.length() < 5) val.insert(1, "0");
+        memory[operand] = val;
 };
 
 //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
@@ -110,6 +122,7 @@ void BRANCHZERO(){
 //function to open a file and read its contents
 void reader(std::string fileName){
 
+//FIXME: These variables aren't something that I'm able to access for STORE() and LOAD(), if we declare them as global, they should work good. I put them as comment at the top, starting at line 19 at time of making this comment
     string memory[100] {};
     int accumulator{};
     int address{};
