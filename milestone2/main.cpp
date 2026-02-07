@@ -38,7 +38,7 @@ int get(std::vector<int> &arr, int index){
 void read(std::vector<int> &arr, int index){
 	try{
 		std::string input;
-		std::cout << "Input the sign + or - then the four digit word you want, if data insert opcode 00 then the number you wish thats two digits so if i wanted 69, +0069, if negative 69, -0069: " << std::endl << std::flush;
+		std::cout << "Input the sign + or - then the four digit word you want, ex -0069: " << std::endl;
 		std::cin >> input;
 		char sign[2] = {'-', '+'};
 		if (input.length() != 5){//length can only be 5 characters long
