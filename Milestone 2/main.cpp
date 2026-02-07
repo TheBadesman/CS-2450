@@ -128,6 +128,9 @@ void reader(std::string fileName){
                 //breaks the while true, leaving the loop if halt (command 43) is called
                 break;
             }
+
+            //prints the current value of the Accumulator, might add a check to see if it has changed, and make it stop when ever there is a change
+            cout << "Accumulator's current value is = " << accumulator << '\n';
         }
         catch(int e)
         {
