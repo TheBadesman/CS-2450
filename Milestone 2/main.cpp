@@ -9,6 +9,7 @@ Created: 01/28/2026
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cassert>
 
 //using name space std to make coding easier
 using namespace std;
@@ -42,7 +43,7 @@ void READ(string memory[100], int memory_address){
                 cout << "You didnt enter a number at all..." << endl;
                 exit(1);
         }catch(const out_of_range& e){
-                cout << "You inputed a number greater than length five(number 4 digits but 5 for potential sign ie -0099)"  << std::endl;
+                cout << "You inputed a number greater or lower than length five(number 4 digits but 5 for potential sign ie -0099)"  << std::endl;
                 exit(1);
         }
         catch(...){
@@ -56,13 +57,17 @@ void WRITE(string memory[100], int memory_address){
 }
 
 //Loads a word from a specific location in memory into the accumulator
-void LOAD(){
-    
+void LOAD(string memory[100], int& address, int& accumulator){
+        int operand = stoi(memory[address].substr(3,2));
+        accumulator = stoi(memory[operand]);
 };
 
 //Stores a word from the accumulator into a specific location in memory
-void STORE(){
-    
+void STORE(string memory[100], int& address, int& accumulator){
+        int operand = stoi(memory[address].substr(3,2));
+        string val = (accumulator >= 0 ? "+" : "") + to_string(accumulator);
+        while (val.length() < 5) val.insert(1, "0");
+        memory[operand] = val;
 };
 
 //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
@@ -170,15 +175,15 @@ void reader(std::string fileName){
             //if else block to run the commands
             if (command == "10"){READ(memory, stoi(memory[address].substr(3,2)));}
             else if (command == "11"){WRITE(memory, stoi(memory[address].substr(3,2)));}
-            else if (command == "20"){LOAD();}
-            else if (command == "21"){STORE();}
+            else if (command == "20"){LOAD(memory, address, accumulator);}
+            else if (command == "21"){STORE(memory, address, accumulator);}
             else if (command == "30"){accumulator = ADD(accumulator, memory, memory[address].substr(3,2));}
             else if (command == "31"){accumulator = SUBTRACT(accumulator, memory, memory[address].substr(3,2));}
             else if (command == "32"){accumulator = DIVIDE(accumulator, memory, memory[address].substr(3,2));}
             else if (command == "33"){accumulator = MULTIPLY(accumulator, memory, memory[address].substr(3,2));}
             else if (command == "40"){address = BRANCH(stoi(memory[address].substr(3,2)));}
-            else if (command == "41"){BRANCHNEG(accumulator, address, stoi(memory[address].substr(3,2)));}
-            else if (command == "42"){BRANCHZERO(accumulator, address, stoi(memory[address].substr(3,2)));}
+            else if (command == "41"){address = BRANCHNEG(accumulator, address, stoi(memory[address].substr(3,2)));}
+            else if (command == "42"){address = BRANCHZERO(accumulator, address, stoi(memory[address].substr(3,2)));}
             else if (command == "43"){
                 //breaks the while true, leaving the loop if halt (command 43) is called
                 break;
@@ -210,4 +215,40 @@ int main()
     reader(filename);
     
     return 0;
+}
+
+void test_BRANCH() {
+    // Test 1: normal branch
+    int result = BRANCH(10);
+    assert(result == 9);
+
+    // Test 2: branch to zero
+    result = BRANCH(0);
+    assert(result == -1);
+
+    std::cout << "BRANCH tests passed\n";
+}
+
+void test_BRANCHNEG() {
+    // Test 1: accumulator is negative → branch
+    int result = BRANCHNEG(-5, 4, 20);
+    assert(result == 19);
+
+    // Test 2: accumulator is NOT negative → do not branch
+    result = BRANCHNEG(10, 4, 20);
+    assert(result == 4);
+
+    std::cout << "BRANCHNEG tests passed\n";
+}
+
+void test_BRANCHZERO() {
+    // Test 1: accumulator is zero → branch
+    int result = BRANCHZERO(0, 7, 30);
+    assert(result == 29);
+
+    // Test 2: accumulator is NOT zero → do not branch
+    result = BRANCHZERO(3, 7, 30);
+    assert(result == 7);
+
+    std::cout << "BRANCHZERO tests passed\n";
 }
