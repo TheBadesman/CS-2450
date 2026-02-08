@@ -178,9 +178,6 @@ int main() {
 	testSubtract();
 	testDIVIDE();
 	testMultiply();
-	string testList[100]{};
-	testList[0] = "0";
-	int result = DIVIDE(8, testList, "0");
 
 	return 0;
 }
