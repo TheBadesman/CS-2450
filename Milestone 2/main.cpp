@@ -9,75 +9,63 @@ Created: 01/28/2026
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
+#include <cassert>
 #include <cstdlib>
 
 
 //using name space std to make coding easier
 using namespace std;
 
-//FIXME: I think we should declare the acccumulator, address, and memory as global, since it'll keep the data accessible to all the existing functions
-/*
-int accumulator;
-int address;
-string memory[100];
- */
-
-int get(std::vector<int> &arr, int index){//helper with error checking so you dont have to do that try catch shit on every get of the memory array or vector, whatever.
-        try{
-                return arr.at(index);
-        }catch(std::out_of_range& e){
-                std::cout << e.what() << std::endl;
-                std::exit(1);
-                return 0;
-        }
+string get(string memory[100], int memory_address){
+    if (memory_address < 0 || memory_address >= 100) {
+        cout << "Memory access out of bounds!" << endl;
+        exit(1);
+    }
+    return memory[memory_address];
 }
 
 
 
-void read(std::vector<int> &arr, int index){
+void READ(string memory[100], int memory_address){
         try{
-                std::string input;
-                std::cout << "Input the sign + or - then the four digit word you want, ex -0069: " << std::endl;
-                std::cin >> input;
-                char sign[2] = {'-', '+'};
+                string input;
+                cout << "Input the sign + or - then the four digit word you want, if data insert opcode 00 then the number you wish thats two digits so if i wanted 69, +0069, if negative 69, -0069: " << std::endl;
+                cin >> input;
                 if (input.length() != 5){//length can only be 5 characters long
-                        throw std::out_of_range("");
-                }else if (input[0] != sign[0] && input[0] != sign[1]){
-                        throw std::invalid_argument("Instruction read does not hold a sign, it needs to be a signed number dog");
+                        throw out_of_range("Your input is either too short or too long!");
+                }else if (input[0] != '-' && input[0] != '+'){
+                        throw invalid_argument("Instruction read does not hold a sign, it needs to be a signed number dog");
                 }for (size_t i = 1; i < input.length(); i++){
-                        if (std::isdigit(input[i]) == false){
-                                throw std::invalid_argument("Instruction read is not a number");
+                        if (isdigit(input[i]) == false){
+                                throw invalid_argument("Instruction read is not a number");
                         }
                 }
-                arr[index] = std::stoi(input);
-        }catch(const std::invalid_argument& e){//reference so you dont copy the exception object, didnt know that helped perforance but good shit ig
-                std::cout << "You didnt enter a number at all..." << std::endl;
-                std::exit(1);
-        }catch(const std::out_of_range& e){
-                std::cout << "You inputed a number greater than length five(number 4 digits but 5 for potential sign ie -0099)"  << std::endl;
-                std::exit(1);
+                memory[memory_address] = input;
+        }catch(const invalid_argument& e){//reference so you dont copy the exception object
+                cout << "You didnt enter a number at all..." << endl;
+                exit(1);
+        }catch(const out_of_range& e){
+                cout << "You inputed a number greater or lower than length five(number 4 digits but 5 for potential sign ie -0099)"  << std::endl;
+                exit(1);
         }
         catch(...){
-                std::cout << "Unknown issue :(" << std::endl;
-                std::exit(1);
+                cout << "Unknown issue :(" << endl;
+                exit(1);
         }
 }
 
-void write(std::vector<int> &arr, int index){//idk why its called write, it writes to screen, should be called print...
-        std::cout << get(arr, index) << std::endl;
+void WRITE(string memory[100], int memory_address){
+    cout << get(memory, memory_address) << endl;
 }
 
 //Loads a word from a specific location in memory into the accumulator
-//FIXME: This function isn't accessing the accumulator, address, and memory variables, I put commented notes and fixes in reader(), and at the top
-void LOAD(){
+void LOAD(string memory[100], int& address, int& accumulator){
         int operand = stoi(memory[address].substr(3,2));
         accumulator = stoi(memory[operand]);
 };
 
 //Stores a word from the accumulator into a specific location in memory
-//FIXME: Ditto the note for LOAD()
-void STORE(){
+void STORE(string memory[100], int& address, int& accumulator){
         int operand = stoi(memory[address].substr(3,2));
         string val = (accumulator >= 0 ? "+" : "") + to_string(accumulator);
         while (val.length() < 5) val.insert(1, "0");
@@ -85,38 +73,60 @@ void STORE(){
 };
 
 //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
-void ADD(){
-    
+int ADD(int accum, string memory[100], string memory_address) {
+    //I need to VALIDATE INPUT ON EACH MATH FUNCTION AND MAKE ERROR HANDLING FOR THAT
+    int location_integer = stoi(memory_address);
+    int to_return = accum + stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
-void SUBTRACT(){
-    
+int SUBTRACT(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum - stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Divides the word in the accumulator by a word from a specific location in memory (leaves the result in the accumulator).
-void DIVIDE(){
+int DIVIDE(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum / stoi(memory[location_integer]);
+    return to_return;
 
 };
 
 //multiplys a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator).
-void MULTIPLY(){
-    
+int MULTIPLY(int accum, string memory[100], string location){
+    int location_integer = stoi(location);
+    int to_return = accum * stoi(memory[location_integer]);
+    return to_return;
 };
 
 //Branchs to a specific location in memory
-void BRANCH(){
-    
+int BRANCH(int memory_address){
+    return memory_address - 1;
 };
 
 //Branchs to a specific location in memory if the accumulator is negative.
-void BRANCHNEG(){
-    
+int BRANCHNEG(int accumulator,int old_address, int memory_address){
+    //checks if the accumaltor is less then zero, and branches if it is
+    if (accumulator < 0){
+        return memory_address - 1;
+    }
+
+    //returns the old address if it is not
+    return old_address;
 };
 
 //Branchs to a specific location in memory if the accumulator is zero
-void BRANCHZERO(){
-    
+int BRANCHZERO(int accumulator, int old_address, int memory_address){
+    //checks if the accumaltor is equal to zero, and branches if it is
+    if (accumulator == 0){
+        return memory_address - 1;
+    }
+
+    //returns the old address if it is not
+    return old_address;
 };
 
 //function to open a file and read its contents
@@ -132,20 +142,21 @@ void reader(std::string fileName){
 
     //makes sure the file is open
     if (!ML.is_open()) {
-        runtime_error("Error! File is not open!");
+        throw runtime_error("Error! File is not open!");
     }
 
     //creating a string for input into the UVSim
     string line;
 
-    //reads the file into the memory
     while (ML >> line){
-
-        //reading the line into the memory
-        memory[address] = line;
-
-        //moves to the next slot in the array
-        address++;
+        //exits the program if the file input is too large for memory
+        if (address >= 100){
+            cout << "Program too large for memory!" << endl;
+            exit(1);
+        }
+    
+        //adds the line to the memory and increases the address
+        memory[address++] = line;
     }
     
     //resets address to its base value of zero
@@ -164,18 +175,18 @@ void reader(std::string fileName){
                 throw 505;
             }
 
-            if (command == "10"){READ();}//this works ofc, switch case is better though at least performance wise, instead of checking every condition up to the correct one
-                    //it just matches the correct option by key, just looked this up: some compilers use a jump table if many ints, if sparse ints itll generate a binary search tree to match keys
-            else if (command == "11"){WRITE();}
-            else if (command == "20"){LOAD();}
-            else if (command == "21"){STORE();}
-            else if (command == "30"){ADD();}
-            else if (command == "31"){SUBTRACT();}
-            else if (command == "32"){DIVIDE();}
-            else if (command == "33"){MULTIPLY();}
-            else if (command == "40"){BRANCH();}
-            else if (command == "41"){BRANCHNEG();}
-            else if (command == "42"){BRANCHZERO();}
+            //if else block to run the commands
+            if (command == "10"){READ(memory, stoi(memory[address].substr(3,2)));}
+            else if (command == "11"){WRITE(memory, stoi(memory[address].substr(3,2)));}
+            else if (command == "20"){LOAD(memory, address, accumulator);}
+            else if (command == "21"){STORE(memory, address, accumulator);}
+            else if (command == "30"){accumulator = ADD(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "31"){accumulator = SUBTRACT(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "32"){accumulator = DIVIDE(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "33"){accumulator = MULTIPLY(accumulator, memory, memory[address].substr(3,2));}
+            else if (command == "40"){address = BRANCH(stoi(memory[address].substr(3,2)));}
+            else if (command == "41"){address = BRANCHNEG(accumulator, address, stoi(memory[address].substr(3,2)));}
+            else if (command == "42"){address = BRANCHZERO(accumulator, address, stoi(memory[address].substr(3,2)));}
             else if (command == "43"){
                 //breaks the while true, leaving the loop if halt (command 43) is called
                 break;
@@ -207,4 +218,40 @@ int main()
     reader(filename);
     
     return 0;
+}
+
+void test_BRANCH() {
+    // Test 1: normal branch
+    int result = BRANCH(10);
+    assert(result == 9);
+
+    // Test 2: branch to zero
+    result = BRANCH(0);
+    assert(result == -1);
+
+    std::cout << "BRANCH tests passed\n";
+}
+
+void test_BRANCHNEG() {
+    // Test 1: accumulator is negative → branch
+    int result = BRANCHNEG(-5, 4, 20);
+    assert(result == 19);
+
+    // Test 2: accumulator is NOT negative → do not branch
+    result = BRANCHNEG(10, 4, 20);
+    assert(result == 4);
+
+    std::cout << "BRANCHNEG tests passed\n";
+}
+
+void test_BRANCHZERO() {
+    // Test 1: accumulator is zero → branch
+    int result = BRANCHZERO(0, 7, 30);
+    assert(result == 29);
+
+    // Test 2: accumulator is NOT zero → do not branch
+    result = BRANCHZERO(3, 7, 30);
+    assert(result == 7);
+
+    std::cout << "BRANCHZERO tests passed\n";
 }
