@@ -6,12 +6,11 @@ Created: 01/28/2026
 */
 
 //includes for the project
+#include "Milestone2UnitTests.h"
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cassert>
-#include <cstdlib>
-
+#include <algorithm>
 
 //using name space std to make coding easier
 using namespace std;
@@ -73,11 +72,15 @@ void STORE(string memory[100], int& address, int& accumulator){
 };
 
 //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
-int ADD(int accum, string memory[100], string memory_address) {
+int ADD(int accum, string memory[100], string location){
     //I need to VALIDATE INPUT ON EACH MATH FUNCTION AND MAKE ERROR HANDLING FOR THAT
-    int location_integer = stoi(memory_address);
-    int to_return = accum + stoi(memory[location_integer]);
-    return to_return;
+    int location_integer = stoi(location);
+    try {
+        int to_return = accum + stoi(memory[location_integer]);
+        return to_return;
+    }
+    catch (...) {
+        cout << "Please input only numbers" << endl;    }
 };
 
 //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
@@ -89,9 +92,16 @@ int SUBTRACT(int accum, string memory[100], string location){
 
 //Divides the word in the accumulator by a word from a specific location in memory (leaves the result in the accumulator).
 int DIVIDE(int accum, string memory[100], string location){
-    int location_integer = stoi(location);
-    int to_return = accum / stoi(memory[location_integer]);
-    return to_return;
+    int location_integer = stoi(location); //Catch divide by zero
+    if (memory[location_integer] == "0") {
+        //cerr << "Divide by zero error" << endl;
+        throw runtime_error("Divide by zero error");
+    }
+    else {
+        int to_return = accum / stoi(memory[location_integer]);
+        return to_return;
+    }
+
 
 };
 
@@ -132,7 +142,6 @@ int BRANCHZERO(int accumulator, int old_address, int memory_address){
 //function to open a file and read its contents
 void reader(std::string fileName){
 
-//FIXME: These variables aren't something that I'm able to access for STORE() and LOAD(), if we declare them as global, they should work good. I put them as comment at the top, starting at line 19 at time of making this comment
     string memory[100] {};
     int accumulator{};
     int address{};
@@ -222,80 +231,4 @@ int main()
     reader(filename);
     
     return 0;
-}
-
-void test_BRANCH() {
-    // Test 1: normal branch
-    int result = BRANCH(10);
-    assert(result == 9);
-
-    // Test 2: branch to zero
-    result = BRANCH(0);
-    assert(result == -1);
-
-    std::cout << "BRANCH tests passed\n";
-}
-
-void test_BRANCHNEG() {
-    // Test 1: accumulator is negative → branch
-    int result = BRANCHNEG(-5, 4, 20);
-    assert(result == 19);
-
-    // Test 2: accumulator is NOT negative → do not branch
-    result = BRANCHNEG(10, 4, 20);
-    assert(result == 4);
-
-    std::cout << "BRANCHNEG tests passed\n";
-}
-
-void test_BRANCHZERO() {
-    // Test 1: accumulator is zero → branch
-    int result = BRANCHZERO(0, 7, 30);
-    assert(result == 29);
-
-    // Test 2: accumulator is NOT zero → do not branch
-    result = BRANCHZERO(3, 7, 30);
-    assert(result == 7);
-
-    std::cout << "BRANCHZERO tests passed\n";
-}
-
-void test_LOAD() {
-    // Test 1: accumulator loads correct value from memory
-    string memory[100]{};
-    int accumulator = 0;
-    int address = 0;
-
-    memory[0] = "+2010";
-    memory[10] = "+0042";
-
-    LOAD(memory, address, accumulator);
-    assert(accumulator == 42);
-
-    // Test 2: accumulator changes from previous value
-    memory[10] = "-0015";
-    LOAD(memory, address, accumulator);
-    assert(accumulator == -15);
-
-    cout << "LOAD tests passed\n";
-}
-
-void test_STORE() {
-    // Test 1: store positive accumulator value into memory
-    string memory[100]{};
-    int accumulator = 25;
-    int address = 0;
-
-    // instruction: STORE into memory location 20
-    memory[0] = "+2120";
-
-    STORE(memory, address, accumulator);
-    assert(memory[20] == "+0025");
-
-    // Test 2: store negative accumulator value into memory
-    accumulator = -9;
-    STORE(memory, address, accumulator);
-    assert(memory[20] == "-0009");
-
-    cout << "STORE tests passed\n";
 }
