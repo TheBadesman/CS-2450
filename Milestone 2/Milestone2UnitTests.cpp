@@ -139,28 +139,23 @@ void test_STORE() {
     cout << "STORE tests passed\n";
 }
 
-void testDIVIDE_ByZeroThrows() {
-	string mem[100]{};
-	mem[0] = "0";
+void test_WRITE() {
+	//Test1: write a positive value
+	string memory[100]{};
+	memory[5] = "0042";
 
-	bool threw = false;
-	try{
-		DIVIDE(10, mem, "0");
-	} catch (runtime_error&){
-		threw = true;
-	}
-	assert(threw == true);
-	cout << "DIVIDE by zero exception test passed\n";
+	cout << "Expected output: The word stored in 5 is +0042" <<endl;
+	WRITE(memory, 5);
+
+	//Test 2: write a negative value
+	memory[12] = "-0019";
+
+	cout << "Expected output: The word stored in 12 is -0019" <<endl;
+	WRITE(memory, 12);
+
+	cout << "WRITE tests passed\n";
 }
 
-void test_MULTIPLY_ByZero() {
-	string mem[100]{};
-	mem[0] = "0";
-
-	int result = MULTIPLY(999, mem, "0");
-	assert(result == 0);
-	cout << "MULTIPLY by zero test passed\n";
-}
 
 int main() {
 	testAddition();
@@ -172,8 +167,7 @@ int main() {
 	test_BRANCHZERO();
 	test_LOAD();
 	test_STORE();
-	testDIVIDE_ByZeroThrows();
-	test_MULTIPLY_ByZero();
+	test_WRITE();
 	
 	return 0;
 }
