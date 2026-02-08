@@ -6,48 +6,31 @@ using namespace std;
 
 
 void testAddition() {
-	//test adding two positive numbers
-	bool passed = true;
+	//Test 1: adding two positive numbers
 	string testList[100]{};
 	testList[0] = "5";
 	int result = ADD(2, testList, "0");
-	if (result != 7) {
-		cout << "Test failed. 5 + 2 != " << result << endl;
-		passed = false;
-	}
-	//test adding with two negative numbers
+	assert(result == 7);
+	//Test 2: adding with two negative numbers
 	testList[1] = "-19";
 	result = ADD(-1, testList, "1");
-	if (result != -20) {
-		cout << "Test failed. -19 + -1 != " << result << endl;
-		passed = false;
-	}
-	if (passed) {
-		cout << "All addition tests passed" << endl;
-	}
+	assert(result == -20);
+	cout << "ADDITION tests passed" << endl;
+
 
 }
 
 void testSubtract() {
-	//test subtracting two positive numbers
-	bool passed = true;
+	//Test 1: subtracting two positive numbers
 	string testList[100]{};
 	testList[0] = "11";
 	int result = SUBTRACT(29, testList, "0");
-	if (result != 18) {
-		cout << "Test failed. 29 - 11 != " << result << endl;
-		passed = false;
-	}
-	//test subtracting a negative number
+	assert(result == 18);
+	//Test 2: subtracting a negative number
 	testList[1] = "-8";
 	result = SUBTRACT(8, testList, "1");
-	if (result != 16) {
-		cout << "Test failed. 8 - (-8) != " << result << endl;
-		passed = false;
-	}
-	if (passed) {
-		cout << "All subtraction tests passed" << endl;
-	}
+	assert(result == 16);
+	cout << "SUBTRACT tests passed" << endl;
 }
 
 void testMultiply() {
@@ -56,42 +39,27 @@ void testMultiply() {
 	string testList[100]{};
 	testList[0] = "5";
 	int result = MULTIPLY(5, testList, "0");
-	if (result != 25) {
-		cout << "Test failed. 5 * 5 != " << result << endl;
-		passed = false;
-	}
+	assert(result == 25);
 	//test multiplying a positive and a negative number
 	testList[1] = "-4";
 	result = MULTIPLY(50, testList, "1");
-	if (result != -200) {
-		cout << "Test failed. -4 * 50 != " << result << endl;
-		passed = false;
-	}
-	if (passed) {
-		cout << "All multiplication tests passed" << endl;
-	}
+	assert(result == -200);
+	cout << "MULTIPLY tests passed" << endl;
 }
 
 void testDIVIDE() {
 	//test regular division
-	bool passed = true;
 	string testList[100]{};
 	testList[0] = "2";
 	int result = DIVIDE(8, testList, "0");
-	if (result != 4) {
-		cout << "Test failed. 8 / 2 != " << result << endl;
-		passed = false;
-	}
+	assert(result == 4);
 	//test dividing by zero
 	testList[1] = "0";
 	try {
 		result = DIVIDE(15, testList, "1");
-		passed = false; // if something isn't thrown, then something went wrong
 	}
 	catch (...) {}
-	if (passed) {
-		cout << "All division tests passed" << endl;
-	}
+	cout << "DIVIDE tests passed" << endl;
 
 }
 
@@ -178,6 +146,5 @@ int main() {
 	testSubtract();
 	testDIVIDE();
 	testMultiply();
-
 	return 0;
 }
