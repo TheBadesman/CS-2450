@@ -139,7 +139,28 @@ void test_STORE() {
     cout << "STORE tests passed\n";
 }
 
+void testDIVIDE_ByZeroThrows() {
+	string mem[100]{};
+	mem[0] = "0";
 
+	bool threw = false;
+	try{
+		DIVIDE(10, mem, "0");
+	} catch (runtime_error&){
+		threw = true;
+	}
+	assert(threw == true);
+	cout << "DIVIDE by zero exception test passed\n";
+}
+
+void test_MULTIPLY_ByZero() {
+	string mem[100]{};
+	mem[0] = "0";
+
+	int result = MULTIPLY(999, mem, "0");
+	assert(result == 0);
+	cout << "MULTIPLY by zero test passed\n";
+}
 
 int main() {
 	testAddition();
@@ -151,5 +172,8 @@ int main() {
 	test_BRANCHZERO();
 	test_LOAD();
 	test_STORE();
+	testDIVIDE_ByZeroThrows();
+	test_MULTIPLY_ByZero();
+	
 	return 0;
 }
