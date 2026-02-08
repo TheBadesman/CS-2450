@@ -55,7 +55,7 @@ void READ(string memory[100], int memory_address){
 }
 
 void WRITE(string memory[100], int memory_address){
-    cout << get(memory, memory_address) << endl;
+    cout << "The word stored in " << memory_address << " is " << get(memory, memory_address) << endl;
 }
 
 //Loads a word from a specific location in memory into the accumulator
@@ -165,6 +165,10 @@ void reader(std::string fileName){
 
     //reads the contents of the file one line at a time, spliting off the command and what word is attached
     while (true){
+        if (memory[address].length() != 5) {
+            throw runtime_error("Invalid instruction length");
+        }
+
         string command = memory[address].substr(1, 2);
 
         //try catch block in case for some reason halt is never called
@@ -254,4 +258,44 @@ void test_BRANCHZERO() {
     assert(result == 7);
 
     std::cout << "BRANCHZERO tests passed\n";
+}
+
+void test_LOAD() {
+    // Test 1: accumulator loads correct value from memory
+    string memory[100]{};
+    int accumulator = 0;
+    int address = 0;
+
+    memory[0] = "+2010";
+    memory[10] = "+0042";
+
+    LOAD(memory, address, accumulator);
+    assert(accumulator == 42);
+
+    // Test 2: accumulator changes from previous value
+    memory[10] = "-0015";
+    LOAD(memory, address, accumulator);
+    assert(accumulator == -15);
+
+    cout << "LOAD tests passed\n";
+}
+
+void test_STORE() {
+    // Test 1: store positive accumulator value into memory
+    string memory[100]{};
+    int accumulator = 25;
+    int address = 0;
+
+    // instruction: STORE into memory location 20
+    memory[0] = "+2120";
+
+    STORE(memory, address, accumulator);
+    assert(memory[20] == "+0025");
+
+    // Test 2: store negative accumulator value into memory
+    accumulator = -9;
+    STORE(memory, address, accumulator);
+    assert(memory[20] == "-0009");
+
+    cout << "STORE tests passed\n";
 }
