@@ -80,7 +80,9 @@ int ADD(int accum, string memory[100], string location){
         return to_return;
     }
     catch (...) {
-        cout << "Please input only numbers" << endl;    }
+        cout << "Please input only numbers" << endl;
+        throw runtime_error("Invalid ADD operation");
+    }
 };
 
 //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
@@ -231,4 +233,4 @@ int main()
     reader(filename);
     
     return 0;
-}
+} 

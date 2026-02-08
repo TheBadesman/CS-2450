@@ -146,5 +146,10 @@ int main() {
 	testSubtract();
 	testDIVIDE();
 	testMultiply();
+	test_BRANCH();
+	test_BRANCHNEG();
+	test_BRANCHZERO();
+	test_LOAD();
+	test_STORE();
 	return 0;
 }
