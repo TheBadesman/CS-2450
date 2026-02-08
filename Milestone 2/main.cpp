@@ -10,6 +10,8 @@ Created: 01/28/2026
 #include <fstream>
 #include <string>
 #include <cassert>
+#include <cstdlib>
+
 
 //using name space std to make coding easier
 using namespace std;
@@ -130,6 +132,7 @@ int BRANCHZERO(int accumulator, int old_address, int memory_address){
 //function to open a file and read its contents
 void reader(std::string fileName){
 
+//FIXME: These variables aren't something that I'm able to access for STORE() and LOAD(), if we declare them as global, they should work good. I put them as comment at the top, starting at line 19 at time of making this comment
     string memory[100] {};
     int accumulator{};
     int address{};
