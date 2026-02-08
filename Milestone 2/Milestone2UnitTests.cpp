@@ -57,6 +57,7 @@ void testDIVIDE() {
 	testList[1] = "0";
 	try {
 		result = DIVIDE(15, testList, "1");
+		assert(false); //if it gets this far, then it failed
 	}
 	catch (...) {}
 	cout << "DIVIDE tests passed" << endl;
