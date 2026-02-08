@@ -142,7 +142,7 @@ void test_STORE() {
 void test_WRITE() {
 	//Test1: write a positive value
 	string memory[100]{};
-	memory[5] = "0042";
+	memory[5] = "+0042";
 
 	cout << "Expected output: The word stored in 5 is +0042" <<endl;
 	WRITE(memory, 5);
