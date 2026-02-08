@@ -7,6 +7,8 @@ using namespace std;
 
 #pragma once
 
+void READ(string memory[100], int memory_address);
+void WRITE(string memory[100], int memory_address);
 int ADD(int accum, string memory[100], string location);
 int SUBTRACT(int accum, string memory[100], string location);
 int DIVIDE(int accum, string memory[100], string location);
