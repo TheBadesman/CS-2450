@@ -10,6 +10,7 @@ Created: 01/28/2026
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include <iostream>
 
 //using name space std to make coding easier
@@ -39,8 +40,12 @@ void STORE(){
 int ADD(int accum, string memory[100], string location) {
     //I need to VALIDATE INPUT ON EACH MATH FUNCTION AND MAKE ERROR HANDLING FOR THAT
     int location_integer = stoi(location);
-    int to_return = accum + stoi(memory[location_integer]);
-    return to_return;
+    try {
+        int to_return = accum + stoi(memory[location_integer]);
+        return to_return;
+    }
+    catch (...) {
+        cout << "Please input only numbers" << endl;    }
 };
 
 //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
@@ -52,9 +57,16 @@ int SUBTRACT(int accum, string memory[100], string location){
 
 //Divides the word in the accumulator by a word from a specific location in memory (leaves the result in the accumulator).
 int DIVIDE(int accum, string memory[100], string location){
-    int location_integer = stoi(location);
-    int to_return = accum / stoi(memory[location_integer]);
-    return to_return;
+    int location_integer = stoi(location); //Catch divide by zero
+    if (memory[location_integer] == "0") {
+        //cerr << "Divide by zero error" << endl;
+        throw runtime_error("Divide by zero error");
+    }
+    else {
+        int to_return = accum / stoi(memory[location_integer]);
+        return to_return;
+    }
+
 
 };
 
@@ -106,7 +118,7 @@ void reader(std::string fileName){
         else if (command == "11"){WRITE();}
         else if (command == "20"){LOAD();}
         else if (command == "21"){STORE();}
-        else if (command == "30"){accumulator = ADD(accumulator, memory, line.substr(3,2));}
+        else if (command == "30"){accumulator = ADD(accumulator, memory, line.substr(3, 2)); }
         else if (command == "31"){accumulator = SUBTRACT(accumulator, memory, line.substr(3, 2)); }
         else if (command == "32"){accumulator = DIVIDE(accumulator, memory, line.substr(3,2));}
         else if (command == "33"){accumulator = MULTIPLY(accumulator, memory, line.substr(3, 2)); }
