@@ -57,7 +57,7 @@ void testDIVIDE() {
 	//test dividing by zero
 	sim.memory[1] = "0";
 	try {
-		result = sim.DIVIDE(15, "1");
+		result = DIVIDE(15, "1");
 	}
 	catch (...) {}
 	cout << "DIVIDE tests passed" << endl;
