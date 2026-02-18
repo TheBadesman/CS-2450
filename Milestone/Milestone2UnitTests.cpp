@@ -57,7 +57,7 @@ void testDIVIDE() {
 	//test dividing by zero
 	sim.memory[1] = "0";
 	try {
-		result = DIVIDE(15, "1");
+		result = sim.DIVIDE(15, "1");
 		assert(false); //if it gets this far, then it failed
 	}
 	catch (...) {}
