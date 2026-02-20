@@ -11,14 +11,16 @@
 #include "imgui_impl_dx11.h"
 #include <d3d11.h>
 #include <tchar.h>
+#include <string>
+#include <imgui_stdlib.h>  //allows to save text input to a string
 
 // Data
-static ID3D11Device*            g_pd3dDevice = nullptr;
-static ID3D11DeviceContext*     g_pd3dDeviceContext = nullptr;
-static IDXGISwapChain*          g_pSwapChain = nullptr;
+static ID3D11Device* g_pd3dDevice = nullptr;
+static ID3D11DeviceContext* g_pd3dDeviceContext = nullptr;
+static IDXGISwapChain* g_pSwapChain = nullptr;
 static bool                     g_SwapChainOccluded = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
-static ID3D11RenderTargetView*  g_mainRenderTargetView = nullptr;
+static ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -96,6 +98,11 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
+    bool open = true;
+    bool showLines = true;
+    int numberOfLines = 100;
+    int lineInfo[] = { 0,1,2,3,4,5,6,7,8,9 };
+    std::string consoleInput = "";
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -133,42 +140,58 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
+        //The start of the Memory Window
+        ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always);
+        ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+        for (int x = 0; x < 100; x++) {
+            ImGui::Text("%s %02d = %d", "Line", x, lineInfo[x % 10]);
         }
+        //NoCollapse stops the window from being collapsed
 
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
+
+        //End of Memory window
+        ImGui::End();
+
+        ImGui::SetNextWindowPos(ImVec2(600, 100), ImGuiCond_Always);
+        ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+        ImGui::Text("Accumulator = ");
+        ImGui::Text("Current Address = ");
+        ImGui::Text("Running = {INSERT BOOLEAN}");
+        if (ImGui::Button("Step")) {
+            //what happens when we step
         }
+        ImGui::SameLine();
+        if (ImGui::Button("Stop")) {
+            //what happens when we stop
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Run")) {
+            //what happens when we run
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Continue")) {
+            //what happens when we continue
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Halt")) {
+            //what happens when we halt
+        }
+        //End of Status window
+        ImGui::End();
+
+
+        //window for the console
+        ImGui::SetNextWindowPos(ImVec2(600, 600), ImGuiCond_Always); 
+        ImGui::Begin("Console", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+        //FIGURE OUT how to make this input and output stuff
+        //MAYBE MAKE THIS APPEAR ONLY WHEN START BUTTON IS PRESSED. MAYBE NOT
+        ImGui::Text("Enter txt file");
+        ImGui::SameLine();
+        ImGui::InputText("##enter txt file here", &consoleInput);
+
+        //end of console window
+        ImGui::End();
 
         // Rendering
         ImGui::Render();
