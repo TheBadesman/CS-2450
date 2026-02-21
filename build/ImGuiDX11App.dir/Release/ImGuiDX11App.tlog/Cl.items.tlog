@@ -1,0 +1,8 @@
+C:\Users\camer\Documents\CS-2450\main.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\main.obj
+C:\Users\camer\Documents\CS-2450\imgui\imgui.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui.obj
+C:\Users\camer\Documents\CS-2450\imgui\imgui_draw.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui_draw.obj
+C:\Users\camer\Documents\CS-2450\imgui\imgui_tables.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui_tables.obj
+C:\Users\camer\Documents\CS-2450\imgui\imgui_widgets.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui_widgets.obj
+C:\Users\camer\Documents\CS-2450\imgui\backends\imgui_impl_win32.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui_impl_win32.obj
+C:\Users\camer\Documents\CS-2450\imgui\backends\imgui_impl_dx11.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui_impl_dx11.obj
+C:\Users\camer\Documents\CS-2450\imgui\misc\cpp\imgui_stdlib.cpp;C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.dir\Release\imgui_stdlib.obj
