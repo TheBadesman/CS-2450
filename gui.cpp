@@ -13,6 +13,8 @@
 #include <tchar.h>
 #include <string>
 #include <imgui_stdlib.h>  //allows to save text input to a string
+#include "UVSim.h"
+#include "Console.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -93,6 +95,8 @@ int main(int, char**)
 
     // Our state
     bool show_demo_window = true;
+    UVSim machine;
+    Console console;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -179,15 +183,82 @@ int main(int, char**)
         ImGui::End();
 
 
-        //window for the console
-        ImGui::Begin("Console", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        //FIGURE OUT how to make this input and output stuff
-        //MAYBE MAKE THIS APPEAR ONLY WHEN START BUTTON IS PRESSED. MAYBE NOT
-        ImGui::Text("Enter txt file");
+        // ============================
+        // Console Window
+        // ============================
+        ImGui::Begin("Console", NULL,
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize);
+        
+        // -------- Program File Input --------
+        ImGui::Text("Program File:");
         ImGui::SameLine();
-        ImGui::InputText("##enter txt file here", &consoleInput);
+        ImGui::InputText("##fileinput", &consoleInput);
 
-        //end of console window
+        //Load Program Button, loads success/failure of program loading to the console
+        if (ImGui::Button("Load"))
+        {
+            if (machine.loadProgram(consoleInput))
+            {
+                console.addLog("Program loaded successfully.");
+            }
+            else
+            {
+                console.addLog("Failed to load program.");
+            }
+        }
+        
+        ImGui::Separator();
+        
+        // -------- Execution Buttons --------
+        //Executes a single instruction
+        if (ImGui::Button("Step"))
+        {
+            machine.step();
+            console.addLog("Stepped one instruction.");
+        }
+
+        //Executes instructions until halted
+        ImGui::SameLine();
+        if (ImGui::Button("Run"))
+        {
+            while (!machine.isHalted())
+                machine.step();
+        
+            console.addLog("Program finished.");
+        }
+
+        //Clears machine state and log
+        ImGui::SameLine();
+        if (ImGui::Button("Reset"))
+        {
+            machine.reset();
+            console.clear();
+            console.addLog("Machine reset.");
+        }
+        
+        ImGui::Separator();
+        
+        // -------- Machine Status --------
+        //Shows current state of the machine, the Accumulator register, the current instruction index, and if the machine is halted
+        ImGui::Text("Accumulator: %d", machine.getAccumulator());
+        ImGui::Text("Program Counter: %d", machine.getProgramCounter());
+        ImGui::Text("Halted: %s", machine.isHalted() ? "Yes" : "No");
+        
+        ImGui::Separator();
+        
+        // -------- Output Log --------
+        //Displays all messages
+        ImGui::BeginChild("ScrollingRegion", ImVec2(0, 150), true);
+        
+        for (const auto& line : console.getLogs())
+        {
+            ImGui::TextUnformatted(line.c_str());
+        }
+        
+        ImGui::EndChild();
+        
         ImGui::End();
 
         // Rendering
