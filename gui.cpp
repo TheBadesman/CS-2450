@@ -95,7 +95,7 @@ int main(int, char**)
 
     // Our state
     bool show_demo_window = true;
-    UVSim machine;
+    //UVSim machine;
     Console console;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -151,7 +151,7 @@ int main(int, char**)
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
         for (int x = 0; x < 100; x++) {
-            ImGui::Text("%s %02d = %s", "Line", x, machine.memory[x]);
+            ImGui::Text("%s %02d = %s", "Line", x, "1");
         }
         //NoCollapse stops the window from being collapsed
 
@@ -208,7 +208,7 @@ int main(int, char**)
         ImGui::InputText("##fileinput", &consoleInput);
 
         //Load Program Button, loads success/failure of program loading to the console
-        if (ImGui::Button("Load"))
+        /*if (ImGui::Button("Load"))
         {
             if (machine.loadProgram(consoleInput))
             {
@@ -218,57 +218,8 @@ int main(int, char**)
             {
                 console.addLog("Failed to load program.");
             }
-        }
+        }*/
         
-        ImGui::Separator();
-        
-        // -------- Execution Buttons --------
-        //Executes a single instruction
-        if (ImGui::Button("Step"))
-        {
-            machine.step();
-            console.addLog("Stepped one instruction.");
-        }
-
-        //Executes instructions until halted
-        ImGui::SameLine();
-        if (ImGui::Button("Run"))
-        {
-            while (!machine.isHalted())
-                machine.step();
-        
-            console.addLog("Program finished.");
-        }
-
-        //Clears machine state and log
-        ImGui::SameLine();
-        if (ImGui::Button("Reset"))
-        {
-            machine.reset();
-            console.clear();
-            console.addLog("Machine reset.");
-        }
-        
-        ImGui::Separator();
-        
-        // -------- Machine Status --------
-        //Shows current state of the machine, the Accumulator register, the current instruction index, and if the machine is halted
-        ImGui::Text("Accumulator: %d", machine.getAccumulator());
-        ImGui::Text("Program Counter: %d", machine.getProgramCounter());
-        ImGui::Text("Halted: %s", machine.isHalted() ? "Yes" : "No");
-        
-        ImGui::Separator();
-        
-        // -------- Output Log --------
-        //Displays all messages
-        ImGui::BeginChild("ScrollingRegion", ImVec2(0, 150), true);
-        
-        for (const auto& line : console.getLogs())
-        {
-            ImGui::TextUnformatted(line.c_str());
-        }
-        
-        ImGui::EndChild();
         
         ImGui::End();
 

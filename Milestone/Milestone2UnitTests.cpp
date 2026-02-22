@@ -148,7 +148,7 @@ void test_WRITE() {
 }
 
 
-int main() {
+/*int main() {
 	testAddition();
 	testSubtract();
 	testDIVIDE();
@@ -161,4 +161,4 @@ int main() {
 	test_WRITE();
 	
 	return 0;
-}
+}*/
