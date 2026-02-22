@@ -14,6 +14,7 @@
 #include <string>
 #include <imgui_stdlib.h>  //allows to save text input to a string
 #include "UVSim.h"
+#include "Console.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -94,15 +95,14 @@ int main(int, char**)
 
     // Our state
     bool show_demo_window = true;
-    UVSim machine;
+    //UVSim machine;
+    Console console;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
     bool done = false;
     bool open = true;
-    bool Stopped = true;
-    bool Running = false;
     bool showLines = true;
     std::string consoleInput = "";
     while (!done)
@@ -151,7 +151,7 @@ int main(int, char**)
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
         for (int x = 0; x < 100; x++) {
-            ImGui::Text("%s %02d = %s", "Line", x, machine.memory[x]);
+            ImGui::Text("%s %02d = %s", "Line", x, "1");
         }
         //NoCollapse stops the window from being collapsed
 
@@ -159,10 +159,13 @@ int main(int, char**)
         //End of Memory window
         ImGui::End();
 
-        ImGui::SetNextWindowPos(ImVec2(600, 100), ImGuiCond_Always);
+        ImVec2 statusSize(io.DisplaySize.x * 0.35f, io.DisplaySize.y * 0.4f);
+        ImVec2 statusPosition(io.DisplaySize.x * 0.55f, io.DisplaySize.y * 0.05f);
+        ImGui::SetNextWindowPos(statusPosition, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(statusSize, ImGuiCond_Always);
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
-        ImGui::Text("Accumulator = %d", machine.accumulator);
-        ImGui::Text("Current Address = %d", machine.address);
+        ImGui::Text("Accumulator = %d", Simulator.accumulator);
+        ImGui::Text("Current Address = %d", Simulator.address);
         if (Stopped == false)
         {
             ImGui::Text("Running = False");
@@ -172,7 +175,7 @@ int main(int, char**)
         }
         if (ImGui::Button("Step")) {
             if (Stopped == false){
-                machine.address++;
+                Simulator.address++;
             }
         }
         ImGui::SameLine();
@@ -190,15 +193,46 @@ int main(int, char**)
         }
         ImGui::SameLine();
         if (ImGui::Button("Halt")) {
-            machine.address = 0;
-            machine.memory[100]= {};
+            Simulator.address = 0;
+            Simulator.memory[100]= {};
         }
         if (Running == true)
         {
-            machine.address++;
+            Simulator.address++;
         }
+
+
+
+        // ============================
+        // Console Window
+        // ============================
+        ImVec2 consoleSize(io.DisplaySize.x * 0.35f, io.DisplaySize.y * 0.4f);
+        ImVec2 consolePosition(io.DisplaySize.x * 0.55f, io.DisplaySize.y * 0.5f);
+        ImGui::SetNextWindowPos(consolePosition, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(consoleSize, ImGuiCond_Always);
+        ImGui::Begin("Console", NULL,
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize);
         
-        ImGui::Separator();
+        // -------- Program File Input --------
+        ImGui::Text("Program File:");
+        ImGui::SameLine();
+        ImGui::InputText("##fileinput", &consoleInput);
+
+        //Load Program Button, loads success/failure of program loading to the console
+        /*if (ImGui::Button("Load"))
+        {
+            if (machine.loadProgram(consoleInput))
+            {
+                console.addLog("Program loaded successfully.");
+            }
+            else
+            {
+                console.addLog("Failed to load program.");
+            }
+        }*/
+        
         
         ImGui::End();
 
