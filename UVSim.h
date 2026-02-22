@@ -6,28 +6,29 @@
 class UVSim
 {
 public:
+    // Memory and registers
     std::string memory[100]{};
-    int accumulator{};
-    int address{};
+    int accumulator;
+    int address;
 
     // Memory access
-    std::string get(std::string memory[100], int memory_address);
+    std::string get(int memory_address);
 
-    // I/O Operations
+    // I/O operations
     void READ(int memory_address);
     void WRITE(int memory_address);
 
-    // Load/Store
-    void LOAD(int& address, int& accumulator);
-    void STORE(int& address, int& accumulator);
+    // Register operations
+    void LOAD(int address, int& accumulator);
+    void STORE(int address, int& accumulator);
 
-    // Arithmetic
-    int ADD(int accum, std::string location);
-    int SUBTRACT(int accum, std::string location);
-    int DIVIDE(int accum, std::string location);
-    int MULTIPLY(int accum, std::string location);
+    // Arithmetic operations
+    int ADD(int accum, int location);
+    int SUBTRACT(int accum, int location);
+    int DIVIDE(int accum, int location);
+    int MULTIPLY(int accum, int location);
 
-    // Branching
+    // Branch operations
     int BRANCH(int memory_address);
     int BRANCHNEG(int accumulator, int old_address, int memory_address);
     int BRANCHZERO(int accumulator, int old_address, int memory_address);

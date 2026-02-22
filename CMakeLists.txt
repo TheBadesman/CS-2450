@@ -27,7 +27,7 @@ set(IMGUI_MISC
 )
 
 add_executable(UVSim
-    main.cpp
+    gui.cpp
     UVSim.cpp
     ${IMGUI_SOURCES}
     ${IMGUI_BACKENDS}

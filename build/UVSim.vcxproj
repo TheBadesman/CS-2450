@@ -313,8 +313,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="C:\Users\camer\Documents\CS-2450\main.cpp" />
-    <ClInclude Include="C:\Users\camer\Documents\CS-2450\UVSim.h" />
+    <ClCompile Include="C:\Users\camer\Documents\CS-2450\gui.cpp" />
+    <ClCompile Include="C:\Users\camer\Documents\CS-2450\UVSim.cpp" />
     <ClCompile Include="C:\Users\camer\Documents\CS-2450\imgui\imgui.cpp" />
     <ClCompile Include="C:\Users\camer\Documents\CS-2450\imgui\imgui_draw.cpp" />
     <ClCompile Include="C:\Users\camer\Documents\CS-2450\imgui\imgui_tables.cpp" />

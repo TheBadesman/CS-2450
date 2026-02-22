@@ -33,12 +33,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int main(int, char**)
 {
-
-    UVSim Simulator;
-    Simulator.accumulator = 30;
-    bool Stopped = false;
-    bool Running = false;
-
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
     float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
@@ -46,7 +40,7 @@ int main(int, char**)
     // Create application window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"UVSIM", WS_OVERLAPPEDWINDOW, 100, 100, (int)(1280 * main_scale), (int)(800 * main_scale), nullptr, nullptr, wc.hInstance, nullptr);
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX11 Example", WS_OVERLAPPEDWINDOW, 100, 100, (int)(1280 * main_scale), (int)(800 * main_scale), nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -100,15 +94,16 @@ int main(int, char**)
 
     // Our state
     bool show_demo_window = true;
+    UVSim machine;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
     bool done = false;
     bool open = true;
+    bool Stopped = true;
+    bool Running = false;
     bool showLines = true;
-    int numberOfLines = 100;
-    int lineInfo[] = { 0,1,2,3,4,5,6,7,8,9 };
     std::string consoleInput = "";
     while (!done)
     {
@@ -149,10 +144,14 @@ int main(int, char**)
 
 
         //The start of the Memory Window
-        ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always);
+        ImGuiIO& io = ImGui::GetIO();  //getting the display size
+        ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
+        ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
+        ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
         for (int x = 0; x < 100; x++) {
-            ImGui::Text("%s %02d = %d", "Line", x, lineInfo[x % 10]);
+            ImGui::Text("%s %02d = %s", "Line", x, machine.memory[x]);
         }
         //NoCollapse stops the window from being collapsed
 
@@ -162,8 +161,8 @@ int main(int, char**)
 
         ImGui::SetNextWindowPos(ImVec2(600, 100), ImGuiCond_Always);
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
-        ImGui::Text("Accumulator = %d", Simulator.accumulator);
-        ImGui::Text("Current Address = %d", Simulator.address);
+        ImGui::Text("Accumulator = %d", machine.accumulator);
+        ImGui::Text("Current Address = %d", machine.address);
         if (Stopped == false)
         {
             ImGui::Text("Running = False");
@@ -173,7 +172,7 @@ int main(int, char**)
         }
         if (ImGui::Button("Step")) {
             if (Stopped == false){
-                Simulator.address++;
+                machine.address++;
             }
         }
         ImGui::SameLine();
@@ -191,29 +190,16 @@ int main(int, char**)
         }
         ImGui::SameLine();
         if (ImGui::Button("Halt")) {
-            Simulator.address = 0;
-            Simulator.memory[100]= {};
+            machine.address = 0;
+            machine.memory[100]= {};
         }
         if (Running == true)
         {
-            Simulator.address++;
+            machine.address++;
         }
         
-
-        //End of Status window
-        ImGui::End();
-
-
-        //window for the console
-        ImGui::SetNextWindowPos(ImVec2(600, 600), ImGuiCond_Always); 
-        ImGui::Begin("Console", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        //FIGURE OUT how to make this input and output stuff
-        //MAYBE MAKE THIS APPEAR ONLY WHEN START BUTTON IS PRESSED. MAYBE NOT
-        ImGui::Text("Enter txt file");
-        ImGui::SameLine();
-        ImGui::InputText("##enter txt file here", &consoleInput);
-
-        //end of console window
+        ImGui::Separator();
+        
         ImGui::End();
 
         // Rendering
