@@ -173,9 +173,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="C:\Users\camer\Documents\CS-2450\build\ImGuiDX11App.vcxproj">
-      <Project>{6332B4EF-E4D4-3628-9162-0111D97CD348}</Project>
-      <Name>ImGuiDX11App</Name>
+    <ProjectReference Include="C:\Users\camer\Documents\CS-2450\build\UVSim.vcxproj">
+      <Project>{8D102D0F-D0F4-333F-A287-411194B9E2E5}</Project>
+      <Name>UVSim</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

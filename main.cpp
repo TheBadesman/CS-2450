@@ -13,6 +13,7 @@
 #include <tchar.h>
 #include <string>
 #include <imgui_stdlib.h>  //allows to save text input to a string
+#include "UVSim.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -32,6 +33,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int main(int, char**)
 {
+
+    UVSim Simulator;
+    Simulator.accumulator = 30;
+    bool Stopped = false;
+    bool Running = false;
+
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
     float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
@@ -39,7 +46,7 @@ int main(int, char**)
     // Create application window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX11 Example", WS_OVERLAPPEDWINDOW, 100, 100, (int)(1280 * main_scale), (int)(800 * main_scale), nullptr, nullptr, wc.hInstance, nullptr);
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"UVSIM", WS_OVERLAPPEDWINDOW, 100, 100, (int)(1280 * main_scale), (int)(800 * main_scale), nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -155,28 +162,44 @@ int main(int, char**)
 
         ImGui::SetNextWindowPos(ImVec2(600, 100), ImGuiCond_Always);
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
-        ImGui::Text("Accumulator = ");
-        ImGui::Text("Current Address = ");
-        ImGui::Text("Running = {INSERT BOOLEAN}");
-        if (ImGui::Button("Step")) {
-            //what happens when we step
+        ImGui::Text("Accumulator = %d", Simulator.accumulator);
+        ImGui::Text("Current Address = %d", Simulator.address);
+        if (Stopped == false)
+        {
+            ImGui::Text("Running = False");
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Stop")) {
-            //what happens when we stop
+        else{
+            ImGui::Text("Running = True");
+        }
+        if (ImGui::Button("Step")) {
+            if (Stopped == false){
+                Simulator.address++;
+            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Run")) {
-            //what happens when we run
+            Running = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Stop")) {
+            Running = false;
+            Stopped = true;
         }
         ImGui::SameLine();
         if (ImGui::Button("Continue")) {
-            //what happens when we continue
+            Stopped = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Halt")) {
-            //what happens when we halt
+            Simulator.address = 0;
+            Simulator.memory[100]= {};
         }
+        if (Running == true)
+        {
+            Simulator.address++;
+        }
+        
+
         //End of Status window
         ImGui::End();
 

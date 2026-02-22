@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(ImGuiDX11App LANGUAGES CXX)
+project(UVSim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,22 +26,23 @@ set(IMGUI_MISC
     ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 )
 
-add_executable(ImGuiDX11App
+add_executable(UVSim
     main.cpp
+    UVSim.cpp
     ${IMGUI_SOURCES}
     ${IMGUI_BACKENDS}
     ${IMGUI_MISC}
 )
 
 # ---- Include directories ----
-target_include_directories(ImGuiDX11App PRIVATE
+target_include_directories(UVSim PRIVATE
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
     ${IMGUI_DIR}/misc/cpp
 )
 
 # ---- Link Windows + DirectX ----
-target_link_libraries(ImGuiDX11App PRIVATE
+target_link_libraries(UVSim PRIVATE
     d3d11
     dxgi
     d3dcompiler
