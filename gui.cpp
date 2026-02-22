@@ -104,8 +104,6 @@ int main(int, char**)
     bool done = false;
     bool open = true;
     bool showLines = true;
-    int numberOfLines = 100;
-    int lineInfo[] = { 0,1,2,3,4,5,6,7,8,9 };
     std::string consoleInput = "";
     while (!done)
     {
@@ -153,7 +151,7 @@ int main(int, char**)
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
         for (int x = 0; x < 100; x++) {
-            ImGui::Text("%s %02d = %d", "Line", x, lineInfo[x % 10]);
+            ImGui::Text("%s %02d = %s", "Line", x, machine.memory[x]);
         }
         //NoCollapse stops the window from being collapsed
 
