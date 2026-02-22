@@ -146,6 +146,11 @@ int main(int, char**)
 
 
         //The start of the Memory Window
+        ImGuiIO& io = ImGui::GetIO();  //getting the display size
+        ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
+        ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
+        ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
         for (int x = 0; x < 100; x++) {
             ImGui::Text("%s %02d = %d", "Line", x, lineInfo[x % 10]);
@@ -156,6 +161,10 @@ int main(int, char**)
         //End of Memory window
         ImGui::End();
 
+        ImVec2 statusSize(io.DisplaySize.x * 0.35f, io.DisplaySize.y * 0.4f);
+        ImVec2 statusPosition(io.DisplaySize.x * 0.55f, io.DisplaySize.y * 0.05f);
+        ImGui::SetNextWindowPos(statusPosition, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(statusSize, ImGuiCond_Always);
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
         ImGui::Text("Accumulator = ");
         ImGui::Text("Current Address = ");
@@ -186,6 +195,10 @@ int main(int, char**)
         // ============================
         // Console Window
         // ============================
+        ImVec2 consoleSize(io.DisplaySize.x * 0.35f, io.DisplaySize.y * 0.4f);
+        ImVec2 consolePosition(io.DisplaySize.x * 0.55f, io.DisplaySize.y * 0.5f);
+        ImGui::SetNextWindowPos(consolePosition, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(consoleSize, ImGuiCond_Always);
         ImGui::Begin("Console", NULL,
             ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoMove |
