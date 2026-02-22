@@ -1,35 +1,24 @@
 #pragma once
 #include <string>
-#include <array>
+#include <vector>
 
 class UVSim
 {
-public:
-    std::array<std::string, 100> memory{};
-    int accumulator = 0;
-    int address = 0;
-    bool halted = false;
-
-    void reset();
-    void step();
-
-    void loadProgramFromFile(const std::string& filename);
-
 private:
-    std::string get(int memory_address);
-    void set(int memory_address, const std::string& value);
+    std::vector<int> memory;
+    int accumulator;
+    int programCounter;
+    bool halted;
 
-    void READ(int memory_address, const std::string& input);
-    void WRITE(int memory_address);
+public:
+    UVSim();
 
-    void LOAD(int operand);
-    void STORE(int operand);
-    void ADD(int operand);
-    void SUBTRACT(int operand);
-    void DIVIDE(int operand);
-    void MULTIPLY(int operand);
+    bool loadProgram(const std::string& filename);
+    void step();
+    void reset();
 
-    void BRANCH(int operand);
-    void BRANCHNEG(int operand);
-    void BRANCHZERO(int operand);
+    bool isHalted() const;
+
+    int getAccumulator() const;
+    int getProgramCounter() const;
 };
