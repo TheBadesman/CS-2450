@@ -1,12 +1,14 @@
 #pragma once
-#include <string>
 #include <vector>
+#include <string>
 
 class Console
 {
-public:
-    std::vector<std::string> log;
-    std::string inputBuffer;
+private:
+    std::vector<std::string> logs;
 
-    void addLog(const std::string& text);
+public:
+    void addLog(const std::string& message);
+    void clear();
+    const std::vector<std::string>& getLogs() const;
 };
