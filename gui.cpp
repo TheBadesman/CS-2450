@@ -104,6 +104,8 @@ int main(int, char**)
     bool done = false;
     bool open = true;
     bool showLines = true;
+    bool Running = false;
+    bool Stopped = true;
     std::string consoleInput = "";
     while (!done)
     {
@@ -164,27 +166,41 @@ int main(int, char**)
         ImGui::SetNextWindowPos(statusPosition, ImGuiCond_Always);
         ImGui::SetNextWindowSize(statusSize, ImGuiCond_Always);
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
-        ImGui::Text("Accumulator = ");
-        ImGui::Text("Current Address = ");
-        ImGui::Text("Running = {INSERT BOOLEAN}");
-        if (ImGui::Button("Step")) {
-            //what happens when we step
+        ImGui::Text("Accumulator = %d", "");
+        ImGui::Text("Current Address = %d", "");
+        if (Stopped == false)
+        {
+            ImGui::Text("Running = False");
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Stop")) {
-            //what happens when we stop
+        else {
+            ImGui::Text("Running = True");
+        }
+        if (ImGui::Button("Step")) {
+            if (Stopped == false) {
+                //machine.address++;
+            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Run")) {
-            //what happens when we run
+            Running = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Stop")) {
+            Running = false;
+            Stopped = true;
         }
         ImGui::SameLine();
         if (ImGui::Button("Continue")) {
-            //what happens when we continue
+            Stopped = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Halt")) {
-            //what happens when we halt
+            //machine.address = 0;
+            //machine.memory[100] = {};
+        }
+        if (Running == true)
+        {
+            //machine.address++;
         }
         //End of Status window
         ImGui::End();

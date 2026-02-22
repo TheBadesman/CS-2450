@@ -3,17 +3,16 @@
 #include <vector>
 
 class UVSim
-{/*
-private:
-    int accumulator;
-    int programCounter;
-    bool halted;
-
+{
 public:
     UVSim();
 
     std::vector<int> memory;
-    bool loadProgram(const std::string& filename);
+    int accumulator;
+    int programCounter;
+    bool halted;
+    int address;
+    /*bool loadProgram(const std::string& filename);
     void step();
     void reset();
 
@@ -21,5 +20,5 @@ public:
 
     int getAccumulator() const;
     int getProgramCounter() const;
-    */
+   */
 };
