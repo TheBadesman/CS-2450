@@ -10,16 +10,18 @@ public:
     int accumulator{};
     int address{};
 
+    UVSim();
+
     // Memory access
-    std::string get(std::string memory[100], int memory_address);
+    std::string get(int memory_address);
 
     // I/O Operations
     void READ(int memory_address);
     void WRITE(int memory_address);
 
     // Load/Store
-    void LOAD(int& address, int& accumulator);
-    void STORE(int& address, int& accumulator);
+    void LOAD();
+    void STORE();
 
     // Arithmetic
     int ADD(int accum, std::string location);
@@ -31,6 +33,8 @@ public:
     int BRANCH(int memory_address);
     int BRANCHNEG(int accumulator, int old_address, int memory_address);
     int BRANCHZERO(int accumulator, int old_address, int memory_address);
+
+    void Execute();
 };
 
 #endif

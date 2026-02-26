@@ -17,7 +17,6 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
-#include <fstream>
 #include <cassert>
 #include <cstdlib>
 
@@ -165,7 +164,7 @@ int main(int, char**)
             if (timer > 0.5f)
             {
             // Execute ONE instruction per tick
-            Simulator.address++;
+            Simulator.Execute();
 
             timer = 0;
             }
@@ -173,7 +172,6 @@ int main(int, char**)
 
 
         //The start of the Memory Window
-        ImGuiIO& io = ImGui::GetIO();  //getting the display size
         ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
         ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
         ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
@@ -212,7 +210,7 @@ int main(int, char**)
 
         if (ImGui::Button("Step")) {
             if (!Stopped)
-                Simulator.address++;
+                Simulator.Execute();
         }
 
         ImGui::SameLine();
@@ -267,36 +265,36 @@ int main(int, char**)
 
         static std::string fileError = "";
 
-        if (ImGui::Button("Load File"))
-{
-        std::string fullPath = "Input/" + consoleInput;
+        if (ImGui::Button("Load File")){
+            std::string fullPath = "Input/" + consoleInput;
 
-        std::ifstream file(fullPath);
+            std::ifstream file(fullPath);
 
-        if (!file.is_open())
-        {
-            fileError = "Error: Could not open file in Input folder.";
-        }
-        else
-        {
-            fileError = "";
-            Simulator.address = 0;
-
-            std::string line;
-            while (file >> line)
+            if (!file.is_open())
             {
-                if (Simulator.address >= 100)
-                {
-                    fileError = "Error: Program too large for memory.";
-                    break;
-                }
-
-                Simulator.memory[Simulator.address++] = line;
+                fileError = "Error: Could not open file in Input folder.";
             }
+            else
+            {
+                fileError = "";
+                Simulator.address = 0;
 
-            file.close();
+                std::string line;
+                while (file >> line)
+                {
+                    if (Simulator.address >= 100)
+                    {
+                        fileError = "Error: Program too large for memory.";
+                        break;
+                    }
+
+                    Simulator.memory[Simulator.address++] = line;
+                }
+                //reset the address to 0
+                Simulator.address = 0;
+                file.close();
+            }
         }
-    }
 
         if (!fileError.empty())
         {
