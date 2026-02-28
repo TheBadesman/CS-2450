@@ -9,14 +9,19 @@ public:
     std::string memory[100]{};
     int accumulator{};
     int address{};
+    std::string consoleLog{};
 
     UVSim();
+
+    //Console Functions
+    void AppendOutput(const std::string& text);
+    void ClearOutput();
 
     // Memory access
     std::string get(int memory_address);
 
     // I/O Operations
-    void READ(int memory_address);
+    void UVSim::READ(const std::string& input);
     void WRITE(int memory_address);
 
     // Load/Store
@@ -34,7 +39,8 @@ public:
     int BRANCHNEG(int accumulator, int old_address, int memory_address);
     int BRANCHZERO(int accumulator, int old_address, int memory_address);
 
-    void Execute();
+    //runs the files and builds / returns the strings for the console
+    bool Execute();
 };
 
 #endif

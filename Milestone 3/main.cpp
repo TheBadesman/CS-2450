@@ -43,6 +43,8 @@ int main(int, char**)
     bool Stopped = false;
     bool Running = false;
     static float timer = 0.0f;
+    std::string readInput = "";
+    bool waitingForRead = false;
 
     for (size_t i = 0; i < 100; i++)
     {
@@ -116,7 +118,6 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
-    bool open = true;
     bool showLines = true;
     int numberOfLines = 100;
     std::string consoleInput = "";
@@ -157,16 +158,42 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        if (Running && !Stopped)
-        {
-            timer += io.DeltaTime;
+        timer += io.DeltaTime;
 
+        if (Running && !Stopped && !waitingForRead)
+        {
+            
             if (timer > 0.5f)
             {
-            // Execute ONE instruction per tick
-            Simulator.Execute();
+                bool result = true;
 
-            timer = 0;
+                try {
+                    result = Simulator.Execute();
+                }
+                catch (const std::exception& e) {
+                    Simulator.AppendOutput(e.what());
+                    Running = false;
+                    Stopped = true;
+                    result = false;
+                }
+
+                if (!result)
+                {
+                    std::string cmd = Simulator.memory[Simulator.address].substr(1,2);
+
+                    if (cmd == "10")
+                    {
+                        waitingForRead = true;
+                        Running = false;
+                    }
+                    else if (cmd == "43")
+                    {
+                        Stopped = true;
+                        Running = false;
+                    }
+                }
+
+                timer = 0;
             }
         }
 
@@ -204,13 +231,29 @@ int main(int, char**)
         ImGui::Text("Current Address = %d", Simulator.address);
 
         if (Stopped)
-            ImGui::Text("Running = False");
+            ImGui::Text("Stopped = True");
         else
-            ImGui::Text("Running = True");
+            ImGui::Text("Stopped = False");
 
         if (ImGui::Button("Step")) {
-            if (!Stopped)
-                Simulator.Execute();
+            if (!Stopped){
+
+                bool result = Simulator.Execute();
+
+                if (!result)
+                {
+                    std::string cmd = Simulator.memory[Simulator.address].substr(1,2);
+
+                    if (cmd == "10")
+                    {
+                        waitingForRead = true;
+                    }
+                    else if (cmd == "43")
+                    {
+                        Stopped = true;
+                    }
+                }
+            }
         }
 
         ImGui::SameLine();
@@ -232,12 +275,16 @@ int main(int, char**)
 
         ImGui::SameLine();
         if (ImGui::Button("Halt")) {
-            for (size_t i = 0; i < 100; i++)
-                Simulator.memory[i] = "x0000";
-
+            for (size_t i = 0; i < 100; i++){
+                Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
+            }
+            //Stops the function for running and sets the address to 0
             Running = false;
             Stopped = true;
             Simulator.address = 0;
+            Simulator.accumulator = 0;
+            waitingForRead = false;
+            Simulator.ClearOutput();
         }
 
         ImGui::End();
@@ -278,8 +325,10 @@ int main(int, char**)
             {
                 fileError = "";
                 Simulator.address = 0;
+                for (int i = 0; i < 100; i++){Simulator.memory[i] = "x0000";}
 
                 std::string line;
+
                 while (file >> line)
                 {
                     if (Simulator.address >= 100)
@@ -293,8 +342,37 @@ int main(int, char**)
                 //reset the address to 0
                 Simulator.address = 0;
                 file.close();
+
+                Simulator.AppendOutput("File loaded Successfully");
             }
         }
+
+        if (waitingForRead)
+        {
+            ImGui::Separator();
+            ImGui::Text("READ Instruction Input:");
+            ImGui::InputText("##readinput", &readInput);
+
+            if (ImGui::Button("Submit Input"))
+            {
+                Simulator.READ(readInput);
+                waitingForRead = false;
+                readInput.clear();
+                Simulator.address++; 
+            }
+        }
+
+        ImGui::Separator();
+        ImGui::Text("Program Output:");
+        ImGui::BeginChild("ConsoleOutput", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true);
+
+        ImGui::TextWrapped("%s", Simulator.consoleLog.c_str());
+
+        // Auto-scroll to bottom
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            ImGui::SetScrollHereY(1.0f);
+
+        ImGui::EndChild();
 
         if (!fileError.empty())
         {
