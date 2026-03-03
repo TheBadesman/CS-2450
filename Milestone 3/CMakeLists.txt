@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cMake_minimum_required(VERSION 3.20)
 project(UVSim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -48,4 +48,5 @@ target_link_libraries(UVSim PRIVATE
     d3dcompiler
     user32
     gdi32
+    dwmapi #jacen added this, my console said i needed it
 )

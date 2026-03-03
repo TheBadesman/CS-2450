@@ -1,0 +1,11 @@
++1009   ; READ into memory[09]
++2009   ; LOAD memory[09] into ACC
++3008   ; ADD memory[08] (constant)
++1107   ; WRITE memory[07]
++4300   ; HALT
+
++0000   ; memory[05] unused
++0000   ; memory[06] unused
++0000   ; memory[07] output placeholder
++0005   ; memory[08] constant = 5
++0000   ; memory[09] input placeholder
