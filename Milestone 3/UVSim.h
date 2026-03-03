@@ -9,19 +9,31 @@ public:
     std::string memory[100]{};
     int accumulator{};
     int address{};
+
+    bool waitingForFilename = false;
+    std::string pendingFilename = "";
     std::string consoleLog{};
 
     UVSim();
+
+    //i add file reading logic, I couldnt seem to find it in latest version, the old version had part of a console.h but...
+    void loadMLProgram();
+    
 
     //Console Functions
     void AppendOutput(const std::string& text);
     void ClearOutput();
 
+    void ProvideInput(const std::string& input);
+    void loadFileFromName(const std::string& filename);    
+
+
     // Memory access
     std::string get(int memory_address);
 
     // I/O Operations
-    void UVSim::READ(const std::string& input);
+    void READ(const std::string& input); //compiler error from: UVSim::READ(const std::string& input), this function is declared here, no need to say its a member function here, only in definitions, .cpp file 
+ 
     void WRITE(int memory_address);
 
     // Load/Store

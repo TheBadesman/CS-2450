@@ -1,11 +1,13 @@
 # ninja log v7
-154	717	7937863265965731	CMakeFiles/UVSim.dir/imgui/misc/cpp/imgui_stdlib.cpp.obj	a2a6dbee4923edf5
-14	892	7937863264405370	CMakeFiles/UVSim.dir/UVSim.cpp.obj	428184a596bc69ed
-118	1745	7937863265460568	CMakeFiles/UVSim.dir/imgui/backends/imgui_impl_win32.cpp.obj	774281da90fcccf3
-50	1849	7937863264900573	CMakeFiles/UVSim.dir/imgui/imgui_tables.cpp.obj	6b7c3c67958b7ba2
-133	2106	7937863265620582	CMakeFiles/UVSim.dir/imgui/backends/imgui_impl_dx11.cpp.obj	73dfa68ddc1e6b95
-7	2429	7937863264325372	CMakeFiles/UVSim.dir/main.cpp.obj	51de3c9a35d2b769
-31	2556	7937863264595393	CMakeFiles/UVSim.dir/imgui/imgui_draw.cpp.obj	4eb38813fb35b13a
-81	2747	7937863265210563	CMakeFiles/UVSim.dir/imgui/imgui_widgets.cpp.obj	3e18a877b83f0043
-23	3459	7937863264485380	CMakeFiles/UVSim.dir/imgui/imgui.cpp.obj	fabed8e580ea9b9a
-3460	4198	7937863298856054	UVSim.exe	10efb54d4f18d89b
+158	677	7942272595564607	CMakeFiles/UVSim.dir/imgui/misc/cpp/imgui_stdlib.cpp.obj	a2a6dbee4923edf5
+106	1638	7942272595053323	CMakeFiles/UVSim.dir/imgui/backends/imgui_impl_win32.cpp.obj	774281da90fcccf3
+59	1785	7942272594692728	CMakeFiles/UVSim.dir/imgui/imgui_tables.cpp.obj	6b7c3c67958b7ba2
+125	2000	7942272595358919	CMakeFiles/UVSim.dir/imgui/backends/imgui_impl_dx11.cpp.obj	73dfa68ddc1e6b95
+30	2480	7942272594286927	CMakeFiles/UVSim.dir/imgui/imgui_draw.cpp.obj	4eb38813fb35b13a
+93	2638	7942272594923083	CMakeFiles/UVSim.dir/imgui/imgui_widgets.cpp.obj	3e18a877b83f0043
+22	3281	7942272594171696	CMakeFiles/UVSim.dir/imgui/imgui.cpp.obj	fabed8e580ea9b9a
+12	937	7942278398876281	CMakeFiles/UVSim.dir/UVSim.cpp.obj	428184a596bc69ed
+12	1782	7942277160328181	CMakeFiles/UVSim.dir/main.cpp.obj	51de3c9a35d2b769
+938	1416	7942278408129789	UVSim.exe	10efb54d4f18d89b
+12	942	7942289557200100	CMakeFiles/UVSim.dir/UVSim.cpp.obj	428184a596bc69ed
+943	1427	7942289566503431	UVSim.exe	10efb54d4f18d89b

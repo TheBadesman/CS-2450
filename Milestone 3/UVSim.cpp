@@ -9,12 +9,98 @@ The main class for the Milestone 2 UVSIM
 #include <string>
 #include <algorithm>
 #include <cstdlib>
+#include <vector>
+#include <filesystem>
+
+
 
 using namespace std;
 
 UVSim::UVSim(){
     accumulator = 0;
     address = 0;
+}
+
+
+std::vector<std::string> get_all_txt(){
+    namespace fs = std::filesystem;
+    std::vector<std::string> vec;
+    for (const auto& entry : fs::directory_iterator(fs::current_path().parent_path())) {// use iterator to get all the .txt files searched in parent folder,and then current folder below. curr folder should be build as .exe is ran there
+        if (entry.is_regular_file() && entry.path().extension() == ".txt") {
+            vec.push_back(entry.path().string());   // full path
+        }
+    }
+
+    for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+        if (entry.is_regular_file() && entry.path().extension() == ".txt") {
+            vec.push_back(entry.path().string());   // full path
+        }
+    }
+
+    return vec;
+}
+
+void UVSim::loadMLProgram(){
+    AppendOutput("Available .txt files:");
+
+    std::vector<std::string> files = get_all_txt();
+    for (const auto& f : files)
+        AppendOutput(f);
+
+    AppendOutput("Type the filename into the console input box and press Enter.");
+    waitingForFilename = true;
+}
+
+void UVSim::loadFileFromName(const std::string& filename){
+    namespace fs = std::filesystem;
+    fs::path full = fs::current_path().parent_path() / filename;
+
+    std::ifstream file(full);
+    if (!file.is_open())
+    {
+        AppendOutput("Could not open program file: " + full.string());
+        return;
+    }
+    
+    AppendOutput("\n");
+    AppendOutput("Loading program: " + full.string());
+    AppendOutput("\n");
+
+    std::string line;
+    int index = 0;
+
+    while (file >> line)
+    {
+        if (line.length() != 5)
+        {
+            AppendOutput("Invalid instruction length in program file.");
+            return;
+        }
+        if (index >= 100)
+        {
+            AppendOutput("Program too large for memory.");
+            return;
+        }
+        memory[index++] = line;
+    }
+
+    for (int i = index; i < 100; i++)
+        memory[i] = "+0000";
+
+    address = 0;
+    AppendOutput("Program loaded successfully.");
+}
+
+void UVSim::ProvideInput(const std::string& input){
+    if (waitingForFilename)
+    {
+        waitingForFilename = false;
+        pendingFilename = input;
+        loadFileFromName(pendingFilename);
+        return;
+    }
+
+    // existing READ logic stays the same
 }
 
 void UVSim::AppendOutput(const std::string& text)
@@ -165,7 +251,7 @@ bool UVSim::Execute(){
         string location = memory[address].substr(3,2);
         bool jumped = false;
 
-        if (command == "10") {AppendOutput("Double check input, should start with if it is positive or negative, followed by the four digit input"); return false;}
+        if (command == "10") { AppendOutput("READ instruction: enter a value like +0005 or -0012"); return false;}
             else if (command == "11"){WRITE(stoi(location));}
             else if (command == "20"){LOAD();}
             else if (command == "21"){STORE();}

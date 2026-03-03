@@ -48,9 +48,17 @@ int main(int, char**)
 
     for (size_t i = 0; i < 100; i++)
     {
-        Simulator.memory[i] = "x0000";
+        Simulator.memory[i] = "x0000"; //see if +0000 do it
     }
-    
+    //now for the magic that seemed to be missing... 
+    try {
+        Simulator.loadMLProgram();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Program load failed: " << e.what() << std::endl;
+        return 1;
+    }
+
 
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
@@ -308,44 +316,12 @@ int main(int, char**)
             ImGuiWindowFlags_NoResize);
 
         ImGui::Text("Enter txt file:");
-        ImGui::InputText("##fileinput", &consoleInput);
-
-        static std::string fileError = "";
-
-        if (ImGui::Button("Load File")){
-            std::string fullPath = "Input/" + consoleInput;
-
-            std::ifstream file(fullPath);
-
-            if (!file.is_open())
-            {
-                fileError = "Error: Could not open file in Input folder.";
-            }
-            else
-            {
-                fileError = "";
-                Simulator.address = 0;
-                for (int i = 0; i < 100; i++){Simulator.memory[i] = "x0000";}
-
-                std::string line;
-
-                while (file >> line)
-                {
-                    if (Simulator.address >= 100)
-                    {
-                        fileError = "Error: Program too large for memory.";
-                        break;
-                    }
-
-                    Simulator.memory[Simulator.address++] = line;
-                }
-                //reset the address to 0
-                Simulator.address = 0;
-                file.close();
-
-                Simulator.AppendOutput("File loaded Successfully");
-            }
+        if (ImGui::InputText("##consoleInput", &consoleInput, ImGuiInputTextFlags_EnterReturnsTrue)){
+            Simulator.ProvideInput(consoleInput);
+            consoleInput.clear();
         }
+
+         
 
         if (waitingForRead)
         {
@@ -374,10 +350,7 @@ int main(int, char**)
 
         ImGui::EndChild();
 
-        if (!fileError.empty())
-        {
-            ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", fileError.c_str());
-        }
+    
 
         ImGui::End();
 
