@@ -21,7 +21,7 @@ public:
     std::string get(int memory_address);
 
     // I/O Operations
-    void UVSim::READ(const std::string& input);
+    void READ(const std::string& input);
     void WRITE(int memory_address);
 
     // Load/Store
