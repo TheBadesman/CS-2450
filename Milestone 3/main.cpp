@@ -121,6 +121,9 @@ int main(int, char**)
     bool showLines = true;
     int numberOfLines = 100;
     std::string consoleInput = "";
+    //isBackgroundGreen keeps track if the background is green or not
+    bool isBackgroundGreen = true;
+
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -204,7 +207,7 @@ int main(int, char**)
         ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
         ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
-        ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
         for (int x = 0; x < 100; x++) {
             ImGui::Text("Line %02d = %s", x, Simulator.memory[x].c_str());
         }
@@ -226,7 +229,7 @@ int main(int, char**)
         ImGui::SetNextWindowSize(statusSize, ImGuiCond_Always);
         ImGui::SetNextWindowPos(statusPos, ImGuiCond_Always);
 
-        ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
         ImGui::Text("Accumulator = %d", Simulator.accumulator);
         ImGui::Text("Current Address = %d", Simulator.address);
@@ -286,6 +289,11 @@ int main(int, char**)
             Simulator.accumulator = 0;
             waitingForRead = false;
             Simulator.ClearOutput();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Color")) {
+            //switches the color from green to white or white to green
+            isBackgroundGreen = !isBackgroundGreen;
         }
 
         ImGui::End();
@@ -387,7 +395,6 @@ int main(int, char**)
         const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
         
 
-        bool isBackgroundGreen = false;
         //uvuGreen is the green with RGB values (76,114,29)
         const float uvuGreen[4] = { 0.298f, 0.447f, 0.114f, 1.0f };
         // offColor is RGB values (255,255,255)
