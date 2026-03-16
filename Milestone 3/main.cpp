@@ -86,6 +86,13 @@ int main(int, char**)
 
     // Setup scaling
     ImGuiStyle& style = ImGui::GetStyle();
+
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.08f, 0.08f, 0.08f, 1.0f);
+
+    //changes the window title bar to be the same color with RGB of (78, 93, 109)
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.31f, 0.36f, 0.43f, 1.0f);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.31f, 0.36f, 0.43f, 1.0f);
+
     style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
     style.FontScaleDpi = main_scale;        // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
 
@@ -399,6 +406,8 @@ int main(int, char**)
         const float uvuGreen[4] = { 0.298f, 0.447f, 0.114f, 1.0f };
         // offColor is RGB values (255,255,255)
         const float offColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        //this if statement makes the background green if isBackgroundGreen is true, and white if false
         if (isBackgroundGreen) {
             g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
             g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
