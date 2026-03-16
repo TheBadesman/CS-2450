@@ -197,6 +197,7 @@ int main(int, char**)
             }
         }
 
+        
 
         //The start of the Memory Window
         ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
@@ -384,9 +385,23 @@ int main(int, char**)
         // Rendering
         ImGui::Render();
         const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
-        g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-        g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, clear_color_with_alpha);
-        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        
+
+        bool isBackgroundGreen = false;
+        //uvuGreen is the green with RGB values (76,114,29)
+        const float uvuGreen[4] = { 0.298f, 0.447f, 0.114f, 1.0f };
+        // offColor is RGB values (255,255,255)
+        const float offColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        if (isBackgroundGreen) {
+            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
+            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        }
+        else {
+            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
+            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        }
 
         // Present
         HRESULT hr = g_pSwapChain->Present(1, 0);   // Present with vsync
