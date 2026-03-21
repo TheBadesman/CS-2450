@@ -323,19 +323,22 @@ int main(int, char**)
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoResize);
 
-        ImGui::Text("Enter txt file:");
+        ImGui::Text("Enter file path:");
         ImGui::InputText("##fileinput", &consoleInput);
+
+        static std::string savePath = "";
+        ImGui::InputText("Save Path", &savePath);
 
         static std::string fileError = "";
 
         if (ImGui::Button("Load File")){
-            std::string fullPath = "Input/" + consoleInput;
+            std::string fullPath = consoleInput;
 
             std::ifstream file(fullPath);
 
             if (!file.is_open())
             {
-                fileError = "Error: Could not open file in Input folder.";
+                fileError = "Error: Could not open file.";
             }
             else
             {
@@ -355,11 +358,29 @@ int main(int, char**)
 
                     Simulator.memory[Simulator.address++] = line;
                 }
-                //reset the address to 0
+
                 Simulator.address = 0;
                 file.close();
 
                 Simulator.AppendOutput("File loaded Successfully");
+            }
+        }
+
+        if (ImGui::Button("Save File")) {
+            std::ofstream outFile(savePath);
+
+            if (!outFile.is_open())
+            {
+                fileError = "Error: Could not save file.";
+            }
+            else
+            {
+                for (int i = 0; i < 100; i++) {
+                    outFile << Simulator.memory[i] << "\n";
+                }
+                outFile.close();
+                fileError = "";
+                Simulator.AppendOutput("File saved successfully");
             }
         }
 
