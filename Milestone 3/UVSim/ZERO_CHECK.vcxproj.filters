@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\camer\Documents\CS-2450\Milestone 3\UVSim\CMakeFiles\7ea24af07b55748faf340bc6520e5a35\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{F7680A56-2726-37EC-9187-67CB193666B4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

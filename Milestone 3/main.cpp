@@ -45,6 +45,7 @@ int main(int, char**)
     static float timer = 0.0f;
     std::string readInput = "";
     bool waitingForRead = false;
+    bool openFile = false;
 
     for (size_t i = 0; i < 100; i++)
     {
@@ -285,7 +286,7 @@ int main(int, char**)
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Halt")) {
+        if (ImGui::Button("Clear")) {
             for (size_t i = 0; i < 100; i++){
                 Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
             }
@@ -296,6 +297,7 @@ int main(int, char**)
             Simulator.accumulator = 0;
             waitingForRead = false;
             Simulator.ClearOutput();
+            openFile = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Color")) {
@@ -317,70 +319,77 @@ int main(int, char**)
         ImGui::SetNextWindowSize(consoleSize, ImGuiCond_Always);
 
         // ----- Console window -----
+
         ImGui::Begin("Console",
             NULL,
             ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoResize);
 
-        ImGui::Text("Enter file path:");
-        ImGui::InputText("##fileinput", &consoleInput);
-
-        static std::string savePath = "";
-        ImGui::InputText("Save Path", &savePath);
-
         static std::string fileError = "";
 
-        if (ImGui::Button("Load File")){
-            std::string fullPath = consoleInput;
+        if (!openFile){
+            ImGui::Text("Enter file path:");
+            ImGui::InputText("##fileinput", &consoleInput);
 
-            std::ifstream file(fullPath);
+            if (ImGui::Button("Load File")){
+                std::string fullPath = consoleInput;
 
-            if (!file.is_open())
-            {
-                fileError = "Error: Could not open file.";
-            }
-            else
-            {
-                fileError = "";
-                Simulator.address = 0;
-                for (int i = 0; i < 100; i++){Simulator.memory[i] = "x0000";}
+                std::ifstream file(fullPath);
 
-                std::string line;
-
-                while (file >> line)
+                if (!file.is_open())
                 {
-                    if (Simulator.address >= 100)
+                    fileError = "Error: Could not open file.";
+                }
+                else
+                {
+                    fileError = "";
+                    Simulator.address = 0;
+                    for (int i = 0; i < 100; i++){Simulator.memory[i] = "x0000";}
+
+                    std::string line;
+
+                    while (file >> line)
                     {
-                        fileError = "Error: Program too large for memory.";
-                        break;
+                        if (Simulator.address >= 100)
+                        {
+                            fileError = "Error: Program too large for memory.";
+                            break;
+                        }
+
+                        Simulator.memory[Simulator.address++] = line;
                     }
 
-                    Simulator.memory[Simulator.address++] = line;
+                    Simulator.address = 0;
+                    file.close();
+                    openFile = true;
+
+                    Simulator.AppendOutput("File loaded Successfully");
                 }
-
-                Simulator.address = 0;
-                file.close();
-
-                Simulator.AppendOutput("File loaded Successfully");
             }
         }
 
-        if (ImGui::Button("Save File")) {
-            std::ofstream outFile(savePath);
+        if(openFile){
+            static std::string savePath = "";
+            ImGui::InputText("Save Path", &savePath);
 
-            if (!outFile.is_open())
-            {
-                fileError = "Error: Could not save file.";
-            }
-            else
-            {
-                for (int i = 0; i < 100; i++) {
-                    outFile << Simulator.memory[i] << "\n";
+            if (ImGui::Button("Save File")) {
+                std::ofstream outFile(savePath);
+
+                if (!outFile.is_open())
+                {
+                    fileError = "Error: Could not save file.";
                 }
-                outFile.close();
-                fileError = "";
-                Simulator.AppendOutput("File saved successfully");
+                else
+                {
+                    for (int i = 0; i < 100; i++) {
+                        outFile << Simulator.memory[i] << "\n";
+                    }
+                    outFile.close();
+                    fileError = "";
+                    Simulator.AppendOutput("File saved successfully");
+                    openFile = false;
+                }
             }
         }
 
