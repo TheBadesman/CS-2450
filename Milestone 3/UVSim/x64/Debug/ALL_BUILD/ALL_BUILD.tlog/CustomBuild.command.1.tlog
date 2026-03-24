@@ -1,6 +1,10 @@
 ^C:\USERS\CAMER\DOCUMENTS\CS-2450\MILESTONE 3\CMAKELISTS.TXT
 setlocal
+<<<<<<< Updated upstream:Milestone 3/UVSim/x64/Debug/ALL_BUILD/ALL_BUILD.tlog/CustomBuild.command.1.tlog
 "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" "-SC:/Users/camer/Documents/CS-2450/Milestone 3" "-BC:/Users/camer/Documents/CS-2450/Milestone 3/UVSim" --check-stamp-file "C:/Users/camer/Documents/CS-2450/Milestone 3/UVSim/CMakeFiles/generate.stamp"
+=======
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" "-SC:/Users/camer/Documents/CS-2450/Milestone 3" "-BC:/Users/camer/Documents/CS-2450/Milestone 3/build" --check-stamp-file "C:/Users/camer/Documents/CS-2450/Milestone 3/build/CMakeFiles/generate.stamp"
+>>>>>>> Stashed changes:Milestone 3/build/x64/Debug/ALL_BUILD/ALL_BUILD.tlog/CustomBuild.command.1.tlog
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

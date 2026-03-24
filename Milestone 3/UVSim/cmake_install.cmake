@@ -40,5 +40,9 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
+<<<<<<< Updated upstream:Milestone 3/UVSim/cmake_install.cmake
 file(WRITE "C:/Users/camer/Documents/CS-2450/Milestone 3/UVSim/${CMAKE_INSTALL_MANIFEST}"
+=======
+file(WRITE "C:/Users/camer/Documents/CS-2450/Milestone 3/build/${CMAKE_INSTALL_MANIFEST}"
+>>>>>>> Stashed changes:Milestone 3/build/cmake_install.cmake
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -1,6 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
+<<<<<<< Updated upstream:Milestone 3/UVSim/UVSim.sln
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ALL_BUILD", "ALL_BUILD.vcxproj", "{3B9EE800-D230-38EE-864A-29C233F0FD6B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0F8C49C7-BE0E-3582-849B-FC21C57B311D} = {0F8C49C7-BE0E-3582-849B-FC21C57B311D}
@@ -13,6 +14,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UVSim", "UVSim.vcxproj", "{
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZERO_CHECK", "ZERO_CHECK.vcxproj", "{094B9194-1B20-3238-A04F-79B3BDBB21AC}"
+=======
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ALL_BUILD", "ALL_BUILD.vcxproj", "{A4C1A5B8-EE18-326E-8422-6B2160AD2F30}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101} = {F063D1A6-6F49-3AE7-AB89-AE0232C45101}
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397} = {45E30DEF-FA49-34AE-A8D1-036B8527D397}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UVSim", "UVSim.vcxproj", "{F063D1A6-6F49-3AE7-AB89-AE0232C45101}"
+	ProjectSection(ProjectDependencies) = postProject
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397} = {45E30DEF-FA49-34AE-A8D1-036B8527D397}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZERO_CHECK", "ZERO_CHECK.vcxproj", "{45E30DEF-FA49-34AE-A8D1-036B8527D397}"
+>>>>>>> Stashed changes:Milestone 3/build/UVSim.sln
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -24,6 +39,7 @@ Global
 		RelWithDebInfo|x64 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+<<<<<<< Updated upstream:Milestone 3/UVSim/UVSim.sln
 		{3B9EE800-D230-38EE-864A-29C233F0FD6B}.Debug|x64.ActiveCfg = Debug|x64
 		{3B9EE800-D230-38EE-864A-29C233F0FD6B}.Release|x64.ActiveCfg = Release|x64
 		{3B9EE800-D230-38EE-864A-29C233F0FD6B}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
@@ -47,6 +63,31 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {60700970-24DE-3B5C-B017-CAACBDAAF24C}
+=======
+		{A4C1A5B8-EE18-326E-8422-6B2160AD2F30}.Debug|x64.ActiveCfg = Debug|x64
+		{A4C1A5B8-EE18-326E-8422-6B2160AD2F30}.Release|x64.ActiveCfg = Release|x64
+		{A4C1A5B8-EE18-326E-8422-6B2160AD2F30}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{A4C1A5B8-EE18-326E-8422-6B2160AD2F30}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.Debug|x64.ActiveCfg = Debug|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.Debug|x64.Build.0 = Debug|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.Release|x64.ActiveCfg = Release|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.Release|x64.Build.0 = Release|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{F063D1A6-6F49-3AE7-AB89-AE0232C45101}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.Debug|x64.ActiveCfg = Debug|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.Debug|x64.Build.0 = Debug|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.Release|x64.ActiveCfg = Release|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.Release|x64.Build.0 = Release|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{45E30DEF-FA49-34AE-A8D1-036B8527D397}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED6A1998-6C2F-3C71-9F37-03847EDAE10A}
+>>>>>>> Stashed changes:Milestone 3/build/UVSim.sln
 	EndGlobalSection
 	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection

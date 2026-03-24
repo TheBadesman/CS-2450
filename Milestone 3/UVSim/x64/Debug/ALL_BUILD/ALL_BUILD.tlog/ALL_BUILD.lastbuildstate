@@ -1,2 +1,6 @@
 PlatformToolSet=v143:VCToolArchitecture=Native64Bit:VCToolsVersion=14.42.34433:TargetPlatformVersion=10.0.22621.0:
+<<<<<<< Updated upstream:Milestone 3/UVSim/x64/Debug/ALL_BUILD/ALL_BUILD.tlog/ALL_BUILD.lastbuildstate
 Debug|x64|C:\Users\camer\Documents\CS-2450\Milestone 3\UVSim\|
+=======
+Debug|x64|C:\Users\camer\Documents\CS-2450\Milestone 3\build\|
+>>>>>>> Stashed changes:Milestone 3/build/x64/Debug/ALL_BUILD/ALL_BUILD.tlog/ALL_BUILD.lastbuildstate

@@ -2,7 +2,11 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
+<<<<<<< Updated upstream:Milestone 3/UVSim/CMakeFiles/3.29.5-msvc4/CompilerIdCXX/Debug/CompilerIdCXX.exe.recipe
       <FullPath>C:\Users\camer\Documents\CS-2450\Milestone 3\UVSim\CMakeFiles\3.29.5-msvc4\CompilerIdCXX\CompilerIdCXX.exe</FullPath>
+=======
+      <FullPath>C:\Users\camer\Documents\CS-2450\Milestone 3\build\CMakeFiles\3.29.5-msvc4\CompilerIdCXX\CompilerIdCXX.exe</FullPath>
+>>>>>>> Stashed changes:Milestone 3/build/CMakeFiles/3.29.5-msvc4/CompilerIdCXX/Debug/CompilerIdCXX.exe.recipe
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

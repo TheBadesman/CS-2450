@@ -34,7 +34,11 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
+<<<<<<< Updated upstream:Milestone 3/UVSim/UVSim.vcxproj.filters
       <UniqueIdentifier>{CE6433A0-6D75-3027-8B90-D365A5423124}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{EFA04D78-C8F2-30EE-91EF-D7DFFFF54CA5}</UniqueIdentifier>
+>>>>>>> Stashed changes:Milestone 3/build/UVSim.vcxproj.filters
     </Filter>
   </ItemGroup>
 </Project>

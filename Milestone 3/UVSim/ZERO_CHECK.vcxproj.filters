@@ -1,13 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+<<<<<<< Updated upstream:Milestone 3/UVSim/ZERO_CHECK.vcxproj.filters
     <CustomBuild Include="C:\Users\camer\Documents\CS-2450\Milestone 3\UVSim\CMakeFiles\7ea24af07b55748faf340bc6520e5a35\generate.stamp.rule">
+=======
+    <CustomBuild Include="C:\Users\camer\Documents\CS-2450\Milestone 3\build\CMakeFiles\3892e673ee559fc2d8e19388e02a2480\generate.stamp.rule">
+>>>>>>> Stashed changes:Milestone 3/build/ZERO_CHECK.vcxproj.filters
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
+<<<<<<< Updated upstream:Milestone 3/UVSim/ZERO_CHECK.vcxproj.filters
       <UniqueIdentifier>{F7680A56-2726-37EC-9187-67CB193666B4}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{6682560F-4FA4-3F59-B211-C264ED321753}</UniqueIdentifier>
+>>>>>>> Stashed changes:Milestone 3/build/ZERO_CHECK.vcxproj.filters
     </Filter>
   </ItemGroup>
 </Project>
