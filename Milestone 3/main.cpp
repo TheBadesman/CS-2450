@@ -19,6 +19,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include <cstring> // Added for strncpy
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -101,24 +102,6 @@ int main(int, char**)
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
-    // Load Fonts
-    // - If fonts are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
-    //   This selection is based on (style.FontSizeBase * style.FontScaleMain * style.FontScaleDpi) reaching a small threshold.
-    // - You can load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - If a file cannot be loaded, AddFont functions will return a nullptr. Please handle those errors in your code (e.g. use an assertion, display an error and quit).
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use FreeType for higher quality font rendering.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    //style.FontSizeBase = 20.0f;
-    //io.Fonts->AddFontDefaultVector();
-    //io.Fonts->AddFontDefaultBitmap();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
-    //IM_ASSERT(font != nullptr);
-
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -135,7 +118,6 @@ int main(int, char**)
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
-        // See the WndProc() function below for our to dispatch events to the Win32 backend.
         MSG msg;
         while (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
         {
@@ -155,7 +137,7 @@ int main(int, char**)
         }
         g_SwapChainOccluded = false;
 
-        // Handle window resize (we don't resize directly in the WM_SIZE handler)
+        // Handle window resize
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0)
         {
             CleanupRenderTarget();
@@ -216,11 +198,104 @@ int main(int, char**)
         ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        for (int x = 0; x < 100; x++) {
-            ImGui::Text("Line %02d = %s", x, Simulator.memory[x].c_str());
-        }
-        //NoCollapse stops the window from being collapsed
+        
+        // Static variables for clipboard and context menu error state
+        static std::string copiedInstruction = "x0000";
+        static std::string memoryErrorMsg = "";
 
+        // Lambda to shift memory elements down (Insert)
+        auto shiftDown = [&](int index) -> bool {
+            // Check if the last memory address is already occupied by a valid instruction
+            if (Simulator.memory[99] != "x0000" && Simulator.memory[99] != "+0000" && Simulator.memory[99] != "") {
+                return false; // Memory is full
+            }
+            for (int i = 98; i >= index; i--) {
+                Simulator.memory[i + 1] = Simulator.memory[i];
+            }
+            Simulator.memory[index] = "x0000";
+            return true;
+        };
+
+        // Lambda to shift memory elements up (Delete)
+        auto shiftUp = [&](int index) {
+            for (int i = index; i < 99; i++) {
+                Simulator.memory[i] = Simulator.memory[i + 1];
+            }
+            Simulator.memory[99] = "x0000";
+        };
+
+        if (!memoryErrorMsg.empty()) {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%s", memoryErrorMsg.c_str());
+            ImGui::SameLine();
+            if (ImGui::Button("Dismiss")) { memoryErrorMsg = ""; }
+        }
+
+        ImGui::TextDisabled("Right-click any address for editing options (Insert/Delete/Copy...)");
+        ImGui::Separator();
+
+        // Start scrollable region for memory locations
+        ImGui::BeginChild("MemoryScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+        // Disable modifications if the simulation is currently running
+        ImGui::BeginDisabled(Running);
+
+        for (int x = 0; x < 100; x++) {
+            ImGui::PushID(x);
+
+            // Display line number
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("Line %02d = ", x);
+            ImGui::SameLine();
+
+            // Text input for direct manual changes
+            char buf[16];
+            strncpy(buf, Simulator.memory[x].c_str(), sizeof(buf));
+            buf[sizeof(buf) - 1] = '\0';
+
+            ImGui::SetNextItemWidth(120.0f);
+            if (ImGui::InputText("##memInput", buf, sizeof(buf))) {
+                Simulator.memory[x] = buf;
+            }
+
+            // Context menu for cut, copy, paste, insert, delete
+            if (ImGui::BeginPopupContextItem("MemContextMenu")) {
+                if (ImGui::MenuItem("Insert Above")) {
+                    if (!shiftDown(x)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
+                }
+                if (ImGui::MenuItem("Insert Below")) {
+                    if (x < 99) {
+                        if (!shiftDown(x + 1)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
+                    }
+                }
+                if (ImGui::MenuItem("Delete")) {
+                    shiftUp(x);
+                }
+                ImGui::Separator();
+                if (ImGui::MenuItem("Cut")) {
+                    copiedInstruction = Simulator.memory[x];
+                    shiftUp(x);
+                }
+                if (ImGui::MenuItem("Copy")) {
+                    copiedInstruction = Simulator.memory[x];
+                }
+                if (ImGui::MenuItem("Paste (Insert)")) {
+                    if (shiftDown(x)) {
+                        Simulator.memory[x] = copiedInstruction;
+                    } else {
+                        memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
+                    }
+                }
+                if (ImGui::MenuItem("Paste (Overwrite)")) {
+                    Simulator.memory[x] = copiedInstruction;
+                }
+                ImGui::EndPopup();
+            }
+
+            ImGui::PopID();
+        }
+
+        ImGui::EndDisabled();
+        ImGui::EndChild();
 
         //End of Memory window
         ImGui::End();
