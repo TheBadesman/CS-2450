@@ -48,7 +48,10 @@ int main(int, char**)
     bool waitingForRead = false;
     bool openFile = false;
 
-    for (size_t i = 0; i < 100; i++)
+    constexpr int memory_size = 250
+    constexpr int max_index = memory_size - 1;
+    
+    for (size_t i = 0; i < memory_size; i++)
     {
         Simulator.memory[i] = "x0000";
     }
@@ -110,7 +113,7 @@ int main(int, char**)
     // Main loop
     bool done = false;
     bool showLines = true;
-    int numberOfLines = 100;
+   
     std::string consoleInput = "";
     //isBackgroundGreen keeps track if the background is green or not
     bool isBackgroundGreen = true;
@@ -206,10 +209,10 @@ int main(int, char**)
         // Lambda to shift memory elements down (Insert)
         auto shiftDown = [&](int index) -> bool {
             // Check if the last memory address is already occupied by a valid instruction
-            if (Simulator.memory[99] != "x0000" && Simulator.memory[99] != "+0000" && Simulator.memory[99] != "") {
+            if (Simulator.memory[max_index] != "x0000" && Simulator.memory[max_index] != "+0000" && Simulator.memory[max_index] != "") {
                 return false; // Memory is full
             }
-            for (int i = 98; i >= index; i--) {
+            for (int i = max_index - 1; i >= index; i--) {
                 Simulator.memory[i + 1] = Simulator.memory[i];
             }
             Simulator.memory[index] = "x0000";
@@ -218,10 +221,10 @@ int main(int, char**)
 
         // Lambda to shift memory elements up (Delete)
         auto shiftUp = [&](int index) {
-            for (int i = index; i < 99; i++) {
+            for (int i = index; i < max_index; i++) {
                 Simulator.memory[i] = Simulator.memory[i + 1];
             }
-            Simulator.memory[99] = "x0000";
+            Simulator.memory[max_index] = "x0000";
         };
 
         if (!memoryErrorMsg.empty()) {
@@ -239,7 +242,7 @@ int main(int, char**)
         // Disable modifications if the simulation is currently running
         ImGui::BeginDisabled(Running);
 
-        for (int x = 0; x < 100; x++) {
+        for (int x = 0; x < memory_size; x++) {
             ImGui::PushID(x);
 
             // Display line number
@@ -259,35 +262,49 @@ int main(int, char**)
 
             // Context menu for cut, copy, paste, insert, delete
             if (ImGui::BeginPopupContextItem("MemContextMenu")) {
+                // 1. Insert Above
                 if (ImGui::MenuItem("Insert Above")) {
-                    if (!shiftDown(x)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
-                }
-                if (ImGui::MenuItem("Insert Below")) {
-                    if (x < 99) {
-                        if (!shiftDown(x + 1)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
+                    if (!shiftDown(x)) {
+                        memoryErrorMsg = "Cannot insert: Memory is full (address " + std::to_string(max_index) + " is occupied).";
                     }
                 }
+            
+                // 2. Insert Below
+                if (ImGui::MenuItem("Insert Below")) {
+                    // Check if we are already at the very last possible index
+                    if (x >= max_index || !shiftDown(x + 1)) {
+                        memoryErrorMsg = "Cannot insert: Memory is full (address " + std::to_string(max_index) + " is occupied).";
+                    }
+                }
+            
                 if (ImGui::MenuItem("Delete")) {
                     shiftUp(x);
                 }
+            
                 ImGui::Separator();
+            
                 if (ImGui::MenuItem("Cut")) {
                     copiedInstruction = Simulator.memory[x];
                     shiftUp(x);
                 }
+            
                 if (ImGui::MenuItem("Copy")) {
                     copiedInstruction = Simulator.memory[x];
                 }
+            
+                // 3. Paste (Insert)
                 if (ImGui::MenuItem("Paste (Insert)")) {
                     if (shiftDown(x)) {
                         Simulator.memory[x] = copiedInstruction;
                     } else {
-                        memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
+                        memoryErrorMsg = "Cannot paste: Memory is full (address " + std::to_string(max_index) + " is occupied).";
                     }
                 }
+            
                 if (ImGui::MenuItem("Paste (Overwrite)")) {
                     Simulator.memory[x] = copiedInstruction;
                 }
+            
                 ImGui::EndPopup();
             }
 
@@ -362,7 +379,7 @@ int main(int, char**)
 
         ImGui::SameLine();
         if (ImGui::Button("Clear")) {
-            for (size_t i = 0; i < 100; i++){
+            for (size_t i = 0; i < memory_size; i++){
                 Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
             }
             //Stops the function for running and sets the address to 0
@@ -420,13 +437,13 @@ int main(int, char**)
                 {
                     fileError = "";
                     Simulator.address = 0;
-                    for (int i = 0; i < 100; i++){Simulator.memory[i] = "x0000";}
+                    for (int i = 0; i < memory_size; i++){Simulator.memory[i] = "x0000";}
 
                     std::string line;
 
                     while (file >> line)
                     {
-                        if (Simulator.address >= 100)
+                        if (Simulator.address >= memory_size)
                         {
                             fileError = "Error: Program too large for memory.";
                             break;
@@ -457,7 +474,7 @@ int main(int, char**)
                 }
                 else
                 {
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < memory_size; i++) {
                         outFile << Simulator.memory[i] << "\n";
                     }
                     outFile.close();
