@@ -31,7 +31,7 @@ void UVSim::ClearOutput()
 }
 
 string UVSim::get(int memory_address){
-    if (memory_address < 0 || memory_address >= 100) {
+    if (memory_address < 0 || memory_address >= 250) {
         AppendOutput("Memory access out of bounds!");
         throw std::runtime_error("message");
     }
