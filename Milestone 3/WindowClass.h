@@ -1,5 +1,7 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef WINDOWCLASS_H
+#define WINDOWClASS_H
+
+#include "UVsim.h"
 
 class Window {
     bool Stopped;

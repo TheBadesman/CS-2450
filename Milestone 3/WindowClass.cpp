@@ -1,5 +1,5 @@
 #include "UVSim.h"
-#include "Window.h"
+#include "WindowClass.h"
 
 
 
