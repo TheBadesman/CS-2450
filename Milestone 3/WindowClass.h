@@ -1,5 +1,5 @@
 #ifndef WINDOWCLASS_H
-#define WINDOWClASS_H
+#define WINDOWCLASS_H
 
 #include "UVsim.h"
 
