@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring> // Added for strncpy
+#include "Window.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -36,22 +37,39 @@ void CreateRenderTarget();
 void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+
+//keeps track of the next Tab ID number
+
+
+
+struct Tab {
+    std::string name;
+    bool open = true;
+    Window tabWindow;
+    inline static int nextTabId = 0;
+    int id = nextTabId;
+
+    Tab(){  
+        //increases Tab ID for the next Tab
+        nextTabId++;
+    }
+};
+
+//collection of all the tabs
+static std::vector<Tab> tabs;
+
+
+
 // Main code
 int main(int, char**)
 {
-
-    UVSim Simulator{};
-    bool Stopped = false;
-    bool Running = false;
-    static float timer = 0.0f;
+    std::vector<Tab> Tabs;
+    Tab mainTab;
+    Tabs.push_back(mainTab);
     std::string readInput = "";
     bool waitingForRead = false;
     bool openFile = false;
 
-    for (size_t i = 0; i < 100; i++)
-    {
-        Simulator.memory[i] = "x0000";
-    }
     
 
     // Make process DPI aware and obtain main monitor scale
@@ -151,46 +169,46 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        timer += io.DeltaTime;
+        float newTime = io.DeltaTime;
+        Tabs[0].tabWindow.incrementTime(newTime);
 
-        if (Running && !Stopped && !waitingForRead)
+        if (Tabs[0].tabWindow.isRunning())
         {
             
-            if (timer > 0.5f)
+            if (Tabs[0].tabWindow.getTimer() > 0.5f)
             {
                 bool result = true;
 
                 try {
-                    result = Simulator.Execute();
+                    result = Tabs[0].tabWindow.windowSim.Execute();
                 }
                 catch (const std::exception& e) {
-                    Simulator.AppendOutput(e.what());
-                    Running = false;
-                    Stopped = true;
+                    Tabs[0].tabWindow.windowSim.AppendOutput(e.what());
+                    Tabs[0].tabWindow.setRunning(false);
+                    Tabs[0].tabWindow.setStopped(true);
                     result = false;
                 }
 
                 if (!result)
                 {
-                    std::string cmd = Simulator.memory[Simulator.address].substr(1,2);
+                    std::string cmd = Tabs[0].tabWindow.windowSim.memory[Tabs[0].tabWindow.windowSim.address].substr(1,2);
 
                     if (cmd == "10")
                     {
                         waitingForRead = true;
-                        Running = false;
+                        Tabs[0].tabWindow.setRunning(false);
                     }
                     else if (cmd == "43")
                     {
-                        Stopped = true;
-                        Running = false;
+                        Tabs[0].tabWindow.setStopped(true);
+                        Tabs[0].tabWindow.setRunning(false);
                     }
                 }
 
-                timer = 0;
+                Tabs[0].tabWindow.setTimer(0);
             }
         }
 
-        
 
         //The start of the Memory Window
         ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
@@ -198,7 +216,14 @@ int main(int, char**)
         ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        
+        if (ImGui::BeginTabBar("MyTabBar")) {
+            if (ImGui::BeginTabItem("main.cpp"))
+            {
+                ImGui::Text("This is the content for main.cpp");
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
         // Static variables for clipboard and context menu error state
         static std::string copiedInstruction = "x0000";
         static std::string memoryErrorMsg = "";
@@ -206,22 +231,22 @@ int main(int, char**)
         // Lambda to shift memory elements down (Insert)
         auto shiftDown = [&](int index) -> bool {
             // Check if the last memory address is already occupied by a valid instruction
-            if (Simulator.memory[99] != "x0000" && Simulator.memory[99] != "+0000" && Simulator.memory[99] != "") {
+            if (Tabs[0].tabWindow.windowSim.memory[99] != "x0000" && Tabs[0].tabWindow.windowSim.memory[99] != "+0000" && Tabs[0].tabWindow.windowSim.memory[99] != "") {
                 return false; // Memory is full
             }
             for (int i = 98; i >= index; i--) {
-                Simulator.memory[i + 1] = Simulator.memory[i];
+                Tabs[0].tabWindow.windowSim.memory[i + 1] = Tabs[0].tabWindow.windowSim.memory[i];
             }
-            Simulator.memory[index] = "x0000";
+            Tabs[0].tabWindow.windowSim.memory[index] = "x0000";
             return true;
         };
 
         // Lambda to shift memory elements up (Delete)
         auto shiftUp = [&](int index) {
             for (int i = index; i < 99; i++) {
-                Simulator.memory[i] = Simulator.memory[i + 1];
+                Tabs[0].tabWindow.windowSim.memory[i] = Tabs[0].tabWindow.windowSim.memory[i + 1];
             }
-            Simulator.memory[99] = "x0000";
+            Tabs[0].tabWindow.windowSim.memory[99] = "x0000";
         };
 
         if (!memoryErrorMsg.empty()) {
@@ -237,7 +262,7 @@ int main(int, char**)
         ImGui::BeginChild("MemoryScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
         // Disable modifications if the simulation is currently running
-        ImGui::BeginDisabled(Running);
+        ImGui::BeginDisabled(Tabs[0].tabWindow.getRunning());
 
         for (int x = 0; x < 100; x++) {
             ImGui::PushID(x);
@@ -249,12 +274,12 @@ int main(int, char**)
 
             // Text input for direct manual changes
             char buf[16];
-            strncpy(buf, Simulator.memory[x].c_str(), sizeof(buf));
+            strncpy_s(buf, Tabs[0].tabWindow.windowSim.memory[x].c_str(), sizeof(buf));
             buf[sizeof(buf) - 1] = '\0';
 
             ImGui::SetNextItemWidth(120.0f);
             if (ImGui::InputText("##memInput", buf, sizeof(buf))) {
-                Simulator.memory[x] = buf;
+                Tabs[0].tabWindow.windowSim.memory[x] = buf;
             }
 
             // Context menu for cut, copy, paste, insert, delete
@@ -272,21 +297,21 @@ int main(int, char**)
                 }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Cut")) {
-                    copiedInstruction = Simulator.memory[x];
+                    copiedInstruction = Tabs[0].tabWindow.windowSim.memory[x];
                     shiftUp(x);
                 }
                 if (ImGui::MenuItem("Copy")) {
-                    copiedInstruction = Simulator.memory[x];
+                    copiedInstruction = Tabs[0].tabWindow.windowSim.memory[x];
                 }
                 if (ImGui::MenuItem("Paste (Insert)")) {
                     if (shiftDown(x)) {
-                        Simulator.memory[x] = copiedInstruction;
+                        Tabs[0].tabWindow.windowSim.memory[x] = copiedInstruction;
                     } else {
                         memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
                     }
                 }
                 if (ImGui::MenuItem("Paste (Overwrite)")) {
-                    Simulator.memory[x] = copiedInstruction;
+                    Tabs[0].tabWindow.windowSim.memory[x] = copiedInstruction;
                 }
                 ImGui::EndPopup();
             }
@@ -314,22 +339,22 @@ int main(int, char**)
 
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-        ImGui::Text("Accumulator = %d", Simulator.accumulator);
-        ImGui::Text("Current Address = %d", Simulator.address);
+        ImGui::Text("Accumulator = %d", Tabs[0].tabWindow.windowSim.accumulator);
+        ImGui::Text("Current Address = %d", Tabs[0].tabWindow.windowSim.address);
 
-        if (Stopped)
+        if (Tabs[0].tabWindow.getStopped())
             ImGui::Text("Stopped = True");
         else
             ImGui::Text("Stopped = False");
 
         if (ImGui::Button("Step")) {
-            if (!Stopped){
+            if (!Tabs[0].tabWindow.getStopped()){
 
-                bool result = Simulator.Execute();
+                bool result = Tabs[0].tabWindow.windowSim.Execute();
 
                 if (!result)
                 {
-                    std::string cmd = Simulator.memory[Simulator.address].substr(1,2);
+                    std::string cmd = Tabs[0].tabWindow.windowSim.memory[Tabs[0].tabWindow.windowSim.address].substr(1,2);
 
                     if (cmd == "10")
                     {
@@ -337,7 +362,7 @@ int main(int, char**)
                     }
                     else if (cmd == "43")
                     {
-                        Stopped = true;
+                        Tabs[0].tabWindow.setStopped(true);
                     }
                 }
             }
@@ -345,33 +370,33 @@ int main(int, char**)
 
         ImGui::SameLine();
         if (ImGui::Button("Run")) {
-            Running = true;
-            Stopped = false;
+            Tabs[0].tabWindow.setRunning(true);
+            Tabs[0].tabWindow.setStopped(false);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Stop")) {
-            Running = false;
-            Stopped = true;
+            Tabs[0].tabWindow.setRunning(false);
+            Tabs[0].tabWindow.setStopped(true);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Continue")) {
-            Stopped = false;
+            Tabs[0].tabWindow.setStopped(false);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Clear")) {
             for (size_t i = 0; i < 100; i++){
-                Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
+                Tabs[0].tabWindow.windowSim.memory[i] = "x0000"; //resets all memory loactions to zero
             }
             //Stops the function for running and sets the address to 0
-            Running = false;
-            Stopped = true;
-            Simulator.address = 0;
-            Simulator.accumulator = 0;
+            Tabs[0].tabWindow.setRunning(false);
+            Tabs[0].tabWindow.setStopped(true);
+            Tabs[0].tabWindow.windowSim.address = 0;
+            Tabs[0].tabWindow.windowSim.accumulator = 0;
             waitingForRead = false;
-            Simulator.ClearOutput();
+            Tabs[0].tabWindow.windowSim.ClearOutput();
             openFile = false;
         }
         ImGui::SameLine();
@@ -419,27 +444,27 @@ int main(int, char**)
                 else
                 {
                     fileError = "";
-                    Simulator.address = 0;
-                    for (int i = 0; i < 100; i++){Simulator.memory[i] = "x0000";}
+                    Tabs[0].tabWindow.windowSim.address = 0;
+                    for (int i = 0; i < 100; i++){ Tabs[0].tabWindow.windowSim.memory[i] = "x0000";}
 
                     std::string line;
 
                     while (file >> line)
                     {
-                        if (Simulator.address >= 100)
+                        if (Tabs[0].tabWindow.windowSim.address >= 100)
                         {
                             fileError = "Error: Program too large for memory.";
                             break;
                         }
 
-                        Simulator.memory[Simulator.address++] = line;
+                        Tabs[0].tabWindow.windowSim.memory[Tabs[0].tabWindow.windowSim.address++] = line;
                     }
 
-                    Simulator.address = 0;
+                    Tabs[0].tabWindow.windowSim.address = 0;
                     file.close();
                     openFile = true;
 
-                    Simulator.AppendOutput("File loaded Successfully");
+                    Tabs[0].tabWindow.windowSim.AppendOutput("File loaded Successfully");
                 }
             }
         }
@@ -458,11 +483,11 @@ int main(int, char**)
                 else
                 {
                     for (int i = 0; i < 100; i++) {
-                        outFile << Simulator.memory[i] << "\n";
+                        outFile << Tabs[0].tabWindow.windowSim.memory[i] << "\n";
                     }
                     outFile.close();
                     fileError = "";
-                    Simulator.AppendOutput("File saved successfully");
+                    Tabs[0].tabWindow.windowSim.AppendOutput("File saved successfully");
                     openFile = false;
                 }
             }
@@ -476,10 +501,10 @@ int main(int, char**)
 
             if (ImGui::Button("Submit Input"))
             {
-                Simulator.READ(readInput);
+                Tabs[0].tabWindow.windowSim.READ(readInput);
                 waitingForRead = false;
                 readInput.clear();
-                Simulator.address++; 
+                Tabs[0].tabWindow.windowSim.address++;
             }
         }
 
@@ -487,7 +512,7 @@ int main(int, char**)
         ImGui::Text("Program Output:");
         ImGui::BeginChild("ConsoleOutput", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true);
 
-        ImGui::TextWrapped("%s", Simulator.consoleLog.c_str());
+        ImGui::TextWrapped("%s", Tabs[0].tabWindow.windowSim.consoleLog.c_str());
 
         // Auto-scroll to bottom
         if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())

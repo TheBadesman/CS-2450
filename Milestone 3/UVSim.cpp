@@ -110,8 +110,7 @@ void UVSim::STORE(){
 int UVSim::ADD(int accum, string location){
         int location_integer = stoi(location);
         try {
-                int to_return = accum + stoi(memory[location_integer]);
-                return to_return;
+            return accum + stoi(memory[location_integer]);
         }
         catch (...) {
                 AppendOutput("Please input only numbers");
@@ -121,8 +120,7 @@ int UVSim::ADD(int accum, string location){
 
 int UVSim::SUBTRACT(int accum, string location){
         int location_integer = stoi(location);
-        int to_return = accum - stoi(memory[location_integer]);
-        return to_return;
+        return accum - stoi(memory[location_integer]);
 }
 
 int UVSim::DIVIDE(int accum, string location){
@@ -131,15 +129,13 @@ int UVSim::DIVIDE(int accum, string location){
                 throw runtime_error("Divide by zero error");
         }
         else {
-                int to_return = accum / stoi(memory[location_integer]);
-                return to_return;
+            return accum / stoi(memory[location_integer]);
         }
 }
 
 int UVSim::MULTIPLY(int accum, string location){
         int location_integer = stoi(location);
-        int to_return = accum * stoi(memory[location_integer]);
-        return to_return;
+        return accum * stoi(memory[location_integer]);
 }
 
 int UVSim::BRANCH(int memory_address){
