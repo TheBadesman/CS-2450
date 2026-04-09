@@ -21,7 +21,6 @@
 #include <cstdlib>
 #include <cstring> // Added for strncpy
 #include <cstdio> // Added for sprint
-//#include "WindowClass.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -51,10 +50,10 @@ public:
     UVSim windowSim;
     std::string readInput = "";
     bool waitingForRead = false;
-    bool openFile = false; //replace all openFiles with links to this
-    bool done = false;    //probably don't need. prolly delete
-    std::string consoleInput = ""; //replace all consoleInputs with links to this
-    bool isBackgroundGreen = true; //replace
+    bool openFile = false;
+    bool done = false;
+    std::string consoleInput = ""; 
+    bool isBackgroundGreen = true;
 
 
     Window() {
@@ -65,8 +64,6 @@ public:
         }
     }
     void incrementTime(float time) {
-        //figure out what to do HERE
-        //ImGuiIO& io = ImGui::GetIO(); (void)io;
         timer += time;
     }
 
@@ -136,9 +133,7 @@ int main(int, char**)
     Tab mainTab;
     Tabs.push_back(mainTab);
     int whichTabToShow = 0;
-    //Window currentWindow = Tabs[whichTabToShow].tabWindow;
     std::string readInput = "";
-    //bool openFile = false;d
     
 
     // Make process DPI aware and obtain main monitor scale
@@ -196,14 +191,10 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
-    //std::string consoleInput = "";
-    //isBackgroundGreen keeps track if the background is green or not
-    //bool isBackgroundGreen = true;
 
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
-        //Window currentWindow = Tabs[whichTabToShow].tabWindow;
         MSG msg;
         while (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
         {
