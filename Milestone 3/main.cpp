@@ -20,7 +20,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring> // Added for strncpy
-
+#include <algorithm> // Added so std::min, std::max, and std::swap
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
 static ID3D11DeviceContext* g_pd3dDeviceContext = nullptr;
@@ -108,7 +108,7 @@ int main(int, char**)
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    //ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f); (Removed due to how the color changes)
 
     // Main loop
     bool done = false;
@@ -116,7 +116,14 @@ int main(int, char**)
    
     std::string consoleInput = "";
     //isBackgroundGreen keeps track if the background is green or not
-    bool isBackgroundGreen = true;
+    //bool isBackgroundGreen = true;
+    ImVec4 backgroundColor = ImVec4(0.298f, 0.447f, 0.114f, 1.0f); // Added to store the current background color as RGB
+    static int backgroundColor255[3] = { 76, 114, 29 }; // Added to store editable RGB values in 0-255
+
+    std::vector<std::string> clipboardLines; // Added to store multiple copied memory lines instead of only one line
+    int selectionStart = -1; // Added to track the starting row of the selected memory block
+    int selectionEnd = -1; // Added to track the ending row of the selected memory block
+
 
     while (!done)
     {
@@ -339,6 +346,8 @@ int main(int, char**)
         else
             ImGui::Text("Stopped = False");
 
+        
+
         if (ImGui::Button("Step")) {
             if (!Stopped){
 
@@ -394,8 +403,39 @@ int main(int, char**)
         ImGui::SameLine();
         if (ImGui::Button("Color")) {
             //switches the color from green to white or white to green
-            isBackgroundGreen = !isBackgroundGreen;
+            //isBackgroundGreen = !isBackgroundGreen; // Removed because the code doesn't toggle
         }
+
+        ImGui::Text("Background Color (0-255):"); // Labels the RGB controls
+        ImGui::InputInt3("RGB", backgroundColor255); // Lets the user directly type integer RGB values
+
+        for (int i = 0; i < 3; i++) { // Keeps each RGB value in the 0-255 range
+            if (backgroundColor255[i] < 0) backgroundColor255[i] = 0; // Prevents negative RGB values
+            if (backgroundColor255[i] > 255) backgroundColor255[i] = 255; // Prevents RGB values above 255
+        }
+
+        backgroundColor = ImVec4( // Converts 0-255 integer RGB values into normalized floats for DirectX rendering
+            backgroundColor255[0] / 255.0f, // Normalizes red from 0-255 into 0.0-1.0
+            backgroundColor255[1] / 255.0f, // Normalize green from 0-255 into 0.0-1.0
+            backgroundColor255[2] / 255.0f, // Normalize blue from 0-255 into 0.0-1.0
+            1.0f // Keeps background fully opaque
+        );
+
+        if (ImGui::Button("Preset UVU Green")) { // A quick shortcut back to the default green
+            backgroundColor255[0] = 76;
+            backgroundColor255[1] = 114;
+            backgroundColor255[2] = 29;
+            backgroundColor = ImVec4(0.298f, 0.447f, 0.114f, 1.0f); // Applies the preset color to rendering
+        }
+
+        ImGui::SameLine(); // Added to place the white preset beside the green preset
+        if (ImGui::Button("Preset White")) { // A quick shortcut to a white background
+            backgroundColor255[0] = 255;
+            backgroundColor255[1] = 255;
+            backgroundColor255[2] = 255;
+            backgroundColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
 
         ImGui::End();
 
@@ -524,22 +564,19 @@ int main(int, char**)
         //THis dont seem to do anything: const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
         
 
-        //uvuGreen is the green with RGB values (76,114,29)
-        const float uvuGreen[4] = { 0.298f, 0.447f, 0.114f, 1.0f };
-        // offColor is RGB values (255,255,255)
-        const float offColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const float activeBackgroundColor[4] = { // Converts the current ImGui background color into the float array DirectX expects
+            backgroundColor.x,
+            backgroundColor.y,
+            backgroundColor.z,
+            backgroundColor.w
+        };
 
-        //this if statement makes the background green if isBackgroundGreen is true, and white if false
-        if (isBackgroundGreen) {
-            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        }
-        else {
-            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        }
+        //Removed if statement makes the background green if isBackgroundGreen is true, and white if false
+
+         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr); // Added to bind the main render target before clearing and drawing
+        g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, activeBackgroundColor); // Added to clear the background using the user-selected RGB color
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Added to render the ImGui interface after clearing with the chosen custom color
+
 
         // Present
         HRESULT hr = g_pSwapChain->Present(1, 0);   // Present with vsync
