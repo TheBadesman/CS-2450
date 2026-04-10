@@ -134,7 +134,7 @@ int main(int, char**)
     Tabs.push_back(mainTab);
     int whichTabToShow = 0;
     std::string readInput = "";
-    
+
 
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
@@ -228,413 +228,418 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-
-
-        //The start of the Memory Window
-        ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
-        ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
-        ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
-        ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
-        ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable)) {
-            for (int n = 0; n < Tabs.size(); n++) {
-                char name[12];
-                int tabId = Tabs[n].id;
-                sprintf(name, "Tab %d", tabId);
-                if (ImGui::BeginTabItem(name)) {
-                    whichTabToShow = tabId;
-                    ImGui::EndTabItem();
-                }
+        for (int x = 0; x < Tabs.size(); x++) {
+            if (Tabs[x].open == false) {
+                Tabs.erase(Tabs.begin() + x);
             }
-            if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoReorder)) {
-                Tab newTab;
-                Tabs.push_back(newTab);
-            }
-            ImGui::EndTabBar();
-        }
-        Window& currentWindow = Tabs[whichTabToShow].tabWindow;
 
-        float newTime = io.DeltaTime;
-        currentWindow.incrementTime(newTime);
-
-        if (currentWindow.isRunning())
-        {
-
-            if (currentWindow.getTimer() > 0.5f)
-            {
-                bool result = true;
-
-                try {
-                    result = currentWindow.windowSim.Execute();
+            //The start of the Memory Window
+            ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
+            ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
+            ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
+            ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
+            ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+            ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.00f, 0.50f, 1.00f, 1.00f));
+            if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable)) {
+                for (int n = 0; n < Tabs.size(); n++) {
+                    char name[32];
+                    int tabId = Tabs[n].id;
+                    sprintf(name, "Tab %d", tabId);
+                    if (ImGui::BeginTabItem(name, &Tabs[n].open)) {
+                        whichTabToShow = n;
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoReorder)) {
+                        Tab newTab;
+                        Tabs.push_back(newTab);
+                    }
+                    ImGui::EndTabBar();
                 }
-                catch (const std::exception& e) {
-                    currentWindow.windowSim.AppendOutput(e.what());
-                    currentWindow.setRunning(false);
-                    currentWindow.setStopped(true);
-                    result = false;
-                }
+            Im:; ImGui::PopStyleColor(1);
+                Window& currentWindow = Tabs[whichTabToShow].tabWindow;
+                float newTime = io.DeltaTime;
+                currentWindow.incrementTime(newTime);
 
-                if (!result)
+                if (currentWindow.isRunning())
                 {
-                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
 
-                    if (cmd == "10")
+                    if (currentWindow.getTimer() > 0.5f)
                     {
-                        currentWindow.waitingForRead = true;
-                        currentWindow.setRunning(false);
-                    }
-                    else if (cmd == "43")
-                    {
-                        currentWindow.setStopped(true);
-                        currentWindow.setRunning(false);
-                    }
-                }
+                        bool result = true;
 
-                currentWindow.setTimer(0);
-            }
-        }
-
-        // Static variables for clipboard and context menu error state
-        static std::string copiedInstruction = "x0000";
-        static std::string memoryErrorMsg = "";
-
-        // Lambda to shift memory elements down (Insert)
-        auto shiftDown = [&](int index) -> bool {
-            // Check if the last memory address is already occupied by a valid instruction
-            if (currentWindow.windowSim.memory[99] != "x0000" && currentWindow.windowSim.memory[99] != "+0000" && currentWindow.windowSim.memory[99] != "") {
-                return false; // Memory is full
-            }
-            for (int i = 98; i >= index; i--) {
-                currentWindow.windowSim.memory[i + 1] = currentWindow.windowSim.memory[i];
-            }
-            currentWindow.windowSim.memory[index] = "x0000";
-            return true;
-        };
-
-        // Lambda to shift memory elements up (Delete)
-        auto shiftUp = [&](int index) {
-            for (int i = index; i < 99; i++) {
-                currentWindow.windowSim.memory[i] = currentWindow.windowSim.memory[i + 1];
-            }
-            currentWindow.windowSim.memory[99] = "x0000";
-        };
-
-        if (!memoryErrorMsg.empty()) {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%s", memoryErrorMsg.c_str());
-            ImGui::SameLine();
-            if (ImGui::Button("Dismiss")) { memoryErrorMsg = ""; }
-        }
-
-        ImGui::TextDisabled("Right-click any address for editing options (Insert/Delete/Copy...)");
-        ImGui::Separator();
-
-        // Start scrollable region for memory locations
-        ImGui::BeginChild("MemoryScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-
-        // Disable modifications if the simulation is currently running
-        ImGui::BeginDisabled(currentWindow.getRunning());
-
-        for (int x = 0; x < 100; x++) {
-            ImGui::PushID(x);
-
-            // Display line number
-            ImGui::AlignTextToFramePadding();
-            ImGui::Text("Line %02d = ", x);
-            ImGui::SameLine();
-
-            // Text input for direct manual changes
-            char buf[16];
-            strncpy_s(buf, currentWindow.windowSim.memory[x].c_str(), sizeof(buf));
-            buf[sizeof(buf) - 1] = '\0';
-
-            ImGui::SetNextItemWidth(120.0f);
-            if (ImGui::InputText("##memInput", buf, sizeof(buf))) {
-                currentWindow.windowSim.memory[x] = buf;
-            }
-
-            // Context menu for cut, copy, paste, insert, delete
-            if (ImGui::BeginPopupContextItem("MemContextMenu")) {
-                if (ImGui::MenuItem("Insert Above")) {
-                    if (!shiftDown(x)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
-                }
-                if (ImGui::MenuItem("Insert Below")) {
-                    if (x < 99) {
-                        if (!shiftDown(x + 1)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
-                    }
-                }
-                if (ImGui::MenuItem("Delete")) {
-                    shiftUp(x);
-                }
-                ImGui::Separator();
-                if (ImGui::MenuItem("Cut")) {
-                    copiedInstruction = currentWindow.windowSim.memory[x];
-                    shiftUp(x);
-                }
-                if (ImGui::MenuItem("Copy")) {
-                    copiedInstruction = currentWindow.windowSim.memory[x];
-                }
-                if (ImGui::MenuItem("Paste (Insert)")) {
-                    if (shiftDown(x)) {
-                        currentWindow.windowSim.memory[x] = copiedInstruction;
-                    } else {
-                        memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
-                    }
-                }
-                if (ImGui::MenuItem("Paste (Overwrite)")) {
-                    currentWindow.windowSim.memory[x] = copiedInstruction;
-                }
-                ImGui::EndPopup();
-            }
-
-            ImGui::PopID();
-        }
-
-        ImGui::EndDisabled();
-        ImGui::EndChild();
-
-        //End of Memory window
-        ImGui::End();
-
-        // ----- Memory layout values -----
-        ImVec2 memorySize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
-        ImVec2 memoryPos(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
-        float memoryBottom = memoryPos.y + memorySize.y;
-
-        // ----- Status window layout -----
-        ImVec2 statusSize(350.0f, 180.0f);
-        ImVec2 statusPos(io.DisplaySize.x * 0.7f, io.DisplaySize.y * 0.05f);
-
-        ImGui::SetNextWindowSize(statusSize, ImGuiCond_Always);
-        ImGui::SetNextWindowPos(statusPos, ImGuiCond_Always);
-
-        ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-
-        ImGui::Text("Accumulator = %d", currentWindow.windowSim.accumulator);
-        ImGui::Text("Current Address = %d", currentWindow.windowSim.address);
-
-        if (currentWindow.getStopped())
-            ImGui::Text("Stopped = True");
-        else
-            ImGui::Text("Stopped = False");
-
-        if (ImGui::Button("Step")) {
-            if (!currentWindow.getStopped()){
-
-                bool result = currentWindow.windowSim.Execute();
-
-                if (!result)
-                {
-                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1,2);
-
-                    if (cmd == "10")
-                    {
-                        currentWindow.waitingForRead = true;
-                    }
-                    else if (cmd == "43")
-                    {
-                        currentWindow.setStopped(true);
-                    }
-                }
-            }
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Run")) {
-            currentWindow.setRunning(true);
-            currentWindow.setStopped(false);
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Stop")) {
-            currentWindow.setRunning(false);
-            currentWindow.setStopped(true);
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Continue")) {
-            currentWindow.setStopped(false);
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Clear")) {
-            for (size_t i = 0; i < 100; i++){
-                currentWindow.windowSim.memory[i] = "x0000"; //resets all memory loactions to zero
-            }
-            //Stops the function for running and sets the address to 0
-            currentWindow.setRunning(false);
-            currentWindow.setStopped(true);
-            currentWindow.windowSim.address = 0;
-            currentWindow.windowSim.accumulator = 0;
-            currentWindow.waitingForRead = false;
-            currentWindow.windowSim.ClearOutput();
-            currentWindow.openFile = false;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Color")) {
-            //switches the color from green to white or white to green
-            currentWindow.isBackgroundGreen = !currentWindow.isBackgroundGreen;
-        }
-
-        ImGui::End();
-
-
-        // ----- Console window layout -----
-        float consoleTopY = statusPos.y + statusSize.y;
-        float consoleHeight = memoryBottom - consoleTopY;
-
-        ImVec2 consoleSize(statusSize.x, consoleHeight);
-        ImVec2 consolePos(statusPos.x, consoleTopY);
-
-        ImGui::SetNextWindowPos(consolePos, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(consoleSize, ImGuiCond_Always);
-
-        // ----- Console window -----
-
-        ImGui::Begin("Console",
-            NULL,
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoResize);
-
-        static std::string fileError = "";
-
-        if (!currentWindow.openFile) {
-            ImGui::Text("Enter file path:");
-            ImGui::InputText("##fileinput", &currentWindow.consoleInput);
-
-            if (ImGui::Button("Load File")){
-                std::string fullPath = currentWindow.consoleInput;
-
-                std::ifstream file(fullPath);
-
-                if (!file.is_open())
-                {
-                    fileError = "Error: Could not open file.";
-                }
-                else
-                {
-                    fileError = "";
-                    currentWindow.windowSim.address = 0;
-                    for (int i = 0; i < 100; i++){ currentWindow.windowSim.memory[i] = "x0000";}
-
-                    std::string line;
-
-                    while (file >> line)
-                    {
-                        if (currentWindow.windowSim.address >= 100)
-                        {
-                            fileError = "Error: Program too large for memory.";
-                            break;
+                        try {
+                            result = currentWindow.windowSim.Execute();
+                        }
+                        catch (const std::exception& e) {
+                            currentWindow.windowSim.AppendOutput(e.what());
+                            currentWindow.setRunning(false);
+                            currentWindow.setStopped(true);
+                            result = false;
                         }
 
-                        currentWindow.windowSim.memory[currentWindow.windowSim.address++] = line;
+                        if (!result)
+                        {
+                            std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
+
+                            if (cmd == "10")
+                            {
+                                currentWindow.waitingForRead = true;
+                                currentWindow.setRunning(false);
+                            }
+                            else if (cmd == "43")
+                            {
+                                currentWindow.setStopped(true);
+                                currentWindow.setRunning(false);
+                            }
+                        }
+
+                        currentWindow.setTimer(0);
+                    }
+                }
+
+                // Static variables for clipboard and context menu error state
+                static std::string copiedInstruction = "x0000";
+                static std::string memoryErrorMsg = "";
+
+                // Lambda to shift memory elements down (Insert)
+                auto shiftDown = [&](int index) -> bool {
+                    // Check if the last memory address is already occupied by a valid instruction
+                    if (currentWindow.windowSim.memory[99] != "x0000" && currentWindow.windowSim.memory[99] != "+0000" && currentWindow.windowSim.memory[99] != "") {
+                        return false; // Memory is full
+                    }
+                    for (int i = 98; i >= index; i--) {
+                        currentWindow.windowSim.memory[i + 1] = currentWindow.windowSim.memory[i];
+                    }
+                    currentWindow.windowSim.memory[index] = "x0000";
+                    return true;
+                    };
+
+                // Lambda to shift memory elements up (Delete)
+                auto shiftUp = [&](int index) {
+                    for (int i = index; i < 99; i++) {
+                        currentWindow.windowSim.memory[i] = currentWindow.windowSim.memory[i + 1];
+                    }
+                    currentWindow.windowSim.memory[99] = "x0000";
+                    };
+
+                if (!memoryErrorMsg.empty()) {
+                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%s", memoryErrorMsg.c_str());
+                    ImGui::SameLine();
+                    if (ImGui::Button("Dismiss")) { memoryErrorMsg = ""; }
+                }
+
+                ImGui::TextDisabled("Right-click any address for editing options (Insert/Delete/Copy...)");
+                ImGui::Separator();
+
+                // Start scrollable region for memory locations
+                ImGui::BeginChild("MemoryScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+                // Disable modifications if the simulation is currently running
+                ImGui::BeginDisabled(currentWindow.getRunning());
+
+                for (int x = 0; x < 100; x++) {
+                    ImGui::PushID(x);
+
+                    // Display line number
+                    ImGui::AlignTextToFramePadding();
+                    ImGui::Text("Line %02d = ", x);
+                    ImGui::SameLine();
+
+                    // Text input for direct manual changes
+                    char buf[16];
+                    strncpy_s(buf, currentWindow.windowSim.memory[x].c_str(), sizeof(buf));
+                    buf[sizeof(buf) - 1] = '\0';
+
+                    ImGui::SetNextItemWidth(120.0f);
+                    if (ImGui::InputText("##memInput", buf, sizeof(buf))) {
+                        currentWindow.windowSim.memory[x] = buf;
                     }
 
-                    currentWindow.windowSim.address = 0;
-                    file.close();
-                    currentWindow.openFile = true;
+                    // Context menu for cut, copy, paste, insert, delete
+                    if (ImGui::BeginPopupContextItem("MemContextMenu")) {
+                        if (ImGui::MenuItem("Insert Above")) {
+                            if (!shiftDown(x)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
+                        }
+                        if (ImGui::MenuItem("Insert Below")) {
+                            if (x < 99) {
+                                if (!shiftDown(x + 1)) memoryErrorMsg = "Cannot insert: Memory is full (address 99 is occupied).";
+                            }
+                        }
+                        if (ImGui::MenuItem("Delete")) {
+                            shiftUp(x);
+                        }
+                        ImGui::Separator();
+                        if (ImGui::MenuItem("Cut")) {
+                            copiedInstruction = currentWindow.windowSim.memory[x];
+                            shiftUp(x);
+                        }
+                        if (ImGui::MenuItem("Copy")) {
+                            copiedInstruction = currentWindow.windowSim.memory[x];
+                        }
+                        if (ImGui::MenuItem("Paste (Insert)")) {
+                            if (shiftDown(x)) {
+                                currentWindow.windowSim.memory[x] = copiedInstruction;
+                            }
+                            else {
+                                memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
+                            }
+                        }
+                        if (ImGui::MenuItem("Paste (Overwrite)")) {
+                            currentWindow.windowSim.memory[x] = copiedInstruction;
+                        }
+                        ImGui::EndPopup();
+                    }
 
-                    currentWindow.windowSim.AppendOutput("File loaded Successfully");
+                    ImGui::PopID();
                 }
-            }
-        }
 
-        if(currentWindow.openFile){
-            static std::string savePath = "";
-            ImGui::InputText("Save Path", &savePath);
+                ImGui::EndDisabled();
+                ImGui::EndChild();
 
-            if (ImGui::Button("Save File")) {
-                std::ofstream outFile(savePath);
+                //End of Memory window
+                ImGui::End();
 
-                if (!outFile.is_open())
-                {
-                    fileError = "Error: Could not save file.";
-                }
+                // ----- Memory layout values -----
+                ImVec2 memorySize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
+                ImVec2 memoryPos(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
+                float memoryBottom = memoryPos.y + memorySize.y;
+
+                // ----- Status window layout -----
+                ImVec2 statusSize(350.0f, 180.0f);
+                ImVec2 statusPos(io.DisplaySize.x * 0.7f, io.DisplaySize.y * 0.05f);
+
+                ImGui::SetNextWindowSize(statusSize, ImGuiCond_Always);
+                ImGui::SetNextWindowPos(statusPos, ImGuiCond_Always);
+
+                ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+
+                ImGui::Text("Accumulator = %d", currentWindow.windowSim.accumulator);
+                ImGui::Text("Current Address = %d", currentWindow.windowSim.address);
+
+                if (currentWindow.getStopped())
+                    ImGui::Text("Stopped = True");
                 else
-                {
-                    for (int i = 0; i < 100; i++) {
-                        outFile << currentWindow.windowSim.memory[i] << "\n";
+                    ImGui::Text("Stopped = False");
+
+                if (ImGui::Button("Step")) {
+                    if (!currentWindow.getStopped()) {
+
+                        bool result = currentWindow.windowSim.Execute();
+
+                        if (!result)
+                        {
+                            std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
+
+                            if (cmd == "10")
+                            {
+                                currentWindow.waitingForRead = true;
+                            }
+                            else if (cmd == "43")
+                            {
+                                currentWindow.setStopped(true);
+                            }
+                        }
                     }
-                    outFile.close();
-                    fileError = "";
-                    currentWindow.windowSim.AppendOutput("File saved successfully");
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Run")) {
+                    currentWindow.setRunning(true);
+                    currentWindow.setStopped(false);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Stop")) {
+                    currentWindow.setRunning(false);
+                    currentWindow.setStopped(true);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Continue")) {
+                    currentWindow.setStopped(false);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Clear")) {
+                    for (size_t i = 0; i < 100; i++) {
+                        currentWindow.windowSim.memory[i] = "x0000"; //resets all memory loactions to zero
+                    }
+                    //Stops the function for running and sets the address to 0
+                    currentWindow.setRunning(false);
+                    currentWindow.setStopped(true);
+                    currentWindow.windowSim.address = 0;
+                    currentWindow.windowSim.accumulator = 0;
+                    currentWindow.waitingForRead = false;
+                    currentWindow.windowSim.ClearOutput();
                     currentWindow.openFile = false;
                 }
+                ImGui::SameLine();
+                if (ImGui::Button("Color")) {
+                    //switches the color from green to white or white to green
+                    currentWindow.isBackgroundGreen = !currentWindow.isBackgroundGreen;
+                }
+
+                ImGui::End();
+
+
+                // ----- Console window layout -----
+                float consoleTopY = statusPos.y + statusSize.y;
+                float consoleHeight = memoryBottom - consoleTopY;
+
+                ImVec2 consoleSize(statusSize.x, consoleHeight);
+                ImVec2 consolePos(statusPos.x, consoleTopY);
+
+                ImGui::SetNextWindowPos(consolePos, ImGuiCond_Always);
+                ImGui::SetNextWindowSize(consoleSize, ImGuiCond_Always);
+
+                // ----- Console window -----
+
+                ImGui::Begin("Console",
+                    NULL,
+                    ImGuiWindowFlags_NoCollapse |
+                    ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoResize);
+
+                static std::string fileError = "";
+
+                if (!currentWindow.openFile) {
+                    ImGui::Text("Enter file path:");
+                    ImGui::InputText("##fileinput", &currentWindow.consoleInput);
+
+                    if (ImGui::Button("Load File")) {
+                        std::string fullPath = currentWindow.consoleInput;
+
+                        std::ifstream file(fullPath);
+
+                        if (!file.is_open())
+                        {
+                            fileError = "Error: Could not open file.";
+                        }
+                        else
+                        {
+                            fileError = "";
+                            currentWindow.windowSim.address = 0;
+                            for (int i = 0; i < 100; i++) { currentWindow.windowSim.memory[i] = "x0000"; }
+
+                            std::string line;
+
+                            while (file >> line)
+                            {
+                                if (currentWindow.windowSim.address >= 100)
+                                {
+                                    fileError = "Error: Program too large for memory.";
+                                    break;
+                                }
+
+                                currentWindow.windowSim.memory[currentWindow.windowSim.address++] = line;
+                            }
+
+                            currentWindow.windowSim.address = 0;
+                            file.close();
+                            currentWindow.openFile = true;
+
+                            currentWindow.windowSim.AppendOutput("File loaded Successfully");
+                        }
+                    }
+                }
+
+                if (currentWindow.openFile) {
+                    static std::string savePath = "";
+                    ImGui::InputText("Save Path", &savePath);
+
+                    if (ImGui::Button("Save File")) {
+                        std::ofstream outFile(savePath);
+
+                        if (!outFile.is_open())
+                        {
+                            fileError = "Error: Could not save file.";
+                        }
+                        else
+                        {
+                            for (int i = 0; i < 100; i++) {
+                                outFile << currentWindow.windowSim.memory[i] << "\n";
+                            }
+                            outFile.close();
+                            fileError = "";
+                            currentWindow.windowSim.AppendOutput("File saved successfully");
+                            currentWindow.openFile = false;
+                        }
+                    }
+                }
+
+                if (currentWindow.waitingForRead)
+                {
+                    ImGui::Separator();
+                    ImGui::Text("READ Instruction Input:");
+                    ImGui::InputText("##readinput", &currentWindow.readInput);
+
+                    if (ImGui::Button("Submit Input"))
+                    {
+                        currentWindow.windowSim.READ(currentWindow.readInput);
+                        currentWindow.waitingForRead = false;
+                        currentWindow.readInput.clear();
+                        currentWindow.windowSim.address++;
+                    }
+                }
+
+                ImGui::Separator();
+                ImGui::Text("Program Output:");
+                ImGui::BeginChild("ConsoleOutput", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true);
+
+                ImGui::TextWrapped("%s", currentWindow.windowSim.consoleLog.c_str());
+
+                // Auto-scroll to bottom
+                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+                    ImGui::SetScrollHereY(1.0f);
+
+                ImGui::EndChild();
+
+                if (!fileError.empty())
+                {
+                    ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", fileError.c_str());
+                }
+
+                ImGui::End();
+
+                // Rendering
+                ImGui::Render();
+                const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
+
+
+                //uvuGreen is the green with RGB values (76,114,29)
+                const float uvuGreen[4] = { 0.298f, 0.447f, 0.114f, 1.0f };
+                // offColor is RGB values (255,255,255)
+                const float offColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+                //this if statement makes the background green if isBackgroundGreen is true, and white if false
+                if (currentWindow.isBackgroundGreen) {
+                    g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+                    g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
+                    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+                }
+                else {
+                    g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+                    g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
+                    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+                }
+
+                // Present
+                HRESULT hr = g_pSwapChain->Present(1, 0);   // Present with vsync
+                //HRESULT hr = g_pSwapChain->Present(0, 0); // Present without vsync
+                g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
             }
         }
+            // Cleanup
+            ImGui_ImplDX11_Shutdown();
+            ImGui_ImplWin32_Shutdown();
+            ImGui::DestroyContext();
 
-        if (currentWindow.waitingForRead)
-        {
-            ImGui::Separator();
-            ImGui::Text("READ Instruction Input:");
-            ImGui::InputText("##readinput", &currentWindow.readInput);
-
-            if (ImGui::Button("Submit Input"))
-            {
-                currentWindow.windowSim.READ(currentWindow.readInput);
-                currentWindow.waitingForRead = false;
-                currentWindow.readInput.clear();
-                currentWindow.windowSim.address++;
-            }
+            CleanupDeviceD3D();
+            ::DestroyWindow(hwnd);
+            ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
         }
-
-        ImGui::Separator();
-        ImGui::Text("Program Output:");
-        ImGui::BeginChild("ConsoleOutput", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true);
-
-        ImGui::TextWrapped("%s", currentWindow.windowSim.consoleLog.c_str());
-
-        // Auto-scroll to bottom
-        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-            ImGui::SetScrollHereY(1.0f);
-
-        ImGui::EndChild();
-
-        if (!fileError.empty())
-        {
-            ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", fileError.c_str());
-        }
-
-        ImGui::End();
-
-        // Rendering
-        ImGui::Render();
-        const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
-        
-
-        //uvuGreen is the green with RGB values (76,114,29)
-        const float uvuGreen[4] = { 0.298f, 0.447f, 0.114f, 1.0f };
-        // offColor is RGB values (255,255,255)
-        const float offColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-        //this if statement makes the background green if isBackgroundGreen is true, and white if false
-        if (currentWindow.isBackgroundGreen) {
-            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        }
-        else {
-            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        }
-
-        // Present
-        HRESULT hr = g_pSwapChain->Present(1, 0);   // Present with vsync
-        //HRESULT hr = g_pSwapChain->Present(0, 0); // Present without vsync
-        g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
-    }
-
-    // Cleanup
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
-
-    CleanupDeviceD3D();
-    ::DestroyWindow(hwnd);
-    ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
-
-    return 0;
+        return 0;
+    
 }
 
 // Helper functions
