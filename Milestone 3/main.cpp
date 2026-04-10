@@ -228,12 +228,15 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        //goes through to see if any of the Tabs need to be closed
         for (int x = 0; x < Tabs.size(); x++) {
             if (Tabs[x].open == false) {
+                //if there is more than 1 tabs in the Tabs, it is able to close the current tab
                 if (Tabs.size() > 1) {
                     Tabs.erase(Tabs.begin() + x);
                     x--;
                 }
+                //if there is one tab in Tabs, don't close the tab
                 else {
                     Tabs[x].open = true;
                 }
