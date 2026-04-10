@@ -113,14 +113,14 @@ void Window::setTimer(float newTime) {
 
 
 struct Tab {
-    std::string name;
     bool open = true;
     Window tabWindow;
     inline static int nextTabId = 0;
-    int id = nextTabId;
+    int id;
 
     Tab(){  
         //increases Tab ID for the next Tab
+        id = nextTabId;
         nextTabId++;
     }
 };

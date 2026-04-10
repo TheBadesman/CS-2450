@@ -110,3 +110,54 @@ FUNCTIONS:
          Return Value: const vector<string>& (reference to the list of strings).
          Pre-condition: None.
          Post-condition: Returns the current state of logs without allowing modification.
+----------------------------------------------------------------
+CLASS: Window
+----------------------------------------------------------------
+PURPOSE: 
+    Allows the GUI to have multiple Windows. Keeps track of things like which UVSim it has,
+    if the background is green, whether it is stopped or running, and other things.
+
+FIELDS:
+    1. Stopped
+    2. Running
+    3. timer
+    4. windowSim
+    5. readInput
+    6. waitingForRead
+    7. openFile
+    8. done
+    9. consoleInput
+    10. isBackgroundGreen
+FUNCTIONS:
+    1. incrementTime
+    2. memory
+    3. execute
+    4. isRunning
+    5. getRunning
+    6. setRunning
+    7. getStopped
+    8. setStopped
+    9. getTimer
+    10. setTimer
+----------------------------------------------------------------
+CLASS: Tab
+----------------------------------------------------------------
+PURPOSE: 
+    Keeps track of a Window and keeps track of the tabs ID.
+
+FIELDS:
+    1. open (bool): A flag indicating if the tab is currently active in the UI. When false, the tab is flagged for removal from the session.
+
+    2. tabWindow (Window): The core simulation instance and GUI state associated with this specific tab.
+
+    3. nextTabId (inline static int): A shared counter used to assign unique identifiers to every new tab instance.
+
+    4. id (int): The unique numerical identifier for the specific tab instance.
+FUNCTIONS:
+    1. Tab (Constructor)
+
+            Purpose: Initializes a new tab instance and ensures it receives a unique ID.
+            Parameters: None.
+            Return Value: N/A (Constructor).
+            Pre-condition: None.
+            Post-condition: The id is set to the current value of nextTabId, and nextTabId is incremented by one.
