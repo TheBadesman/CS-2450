@@ -48,7 +48,7 @@ int main(int, char**)
     bool waitingForRead = false;
     bool openFile = false;
 
-    constexpr int memory_size = 250
+    constexpr int memory_size = 250;
     constexpr int max_index = memory_size - 1;
     
     for (size_t i = 0; i < memory_size; i++)
