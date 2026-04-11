@@ -6,7 +6,7 @@
 class UVSim
 {
 public:
-    std::string memory[100]{};
+    std::string memory[250]{};
     int accumulator{};
     int address{};
     std::string consoleLog{};
