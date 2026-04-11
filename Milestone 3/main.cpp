@@ -55,21 +55,17 @@ public:
     bool done = false;
     std::string consoleInput = ""; 
     bool isBackgroundGreen = true;
+    int memorySize;
 
   //CHANGE so the memory now has 250 instead of 100
     Window() {
         //starts the memory with x0000
-        for (size_t i = 0; i < 100; i++)
-        {
-            windowSim.memory[i] = "x0000";
+            memorySize = std::size(windowSim.memory);
+            for (size_t i = 0; i < memorySize; i++)
+            {
+                windowSim.memory[i] = "x0000";
+            }
         }
-    constexpr int memory_size = 250;
-    constexpr int max_index = memory_size - 1;
-    
-    for (size_t i = 0; i < memory_size; i++)
-    {
-        Simulator.memory[i] = "x0000";
-    }
     void incrementTime(float time) {
         timer += time;
     }
@@ -322,17 +318,18 @@ int main(int, char**)
         auto shiftDown = [&](int index) -> bool {
           //UPDATE CURRENT WINDOW TO DO SIMILAR THINGS TO THE MAX INDEX
             // Check if the last memory address is already occupied by a valid instruction
-            if (currentWindow.windowSim.memory[99] != "x0000" && currentWindow.windowSim.memory[99] != "+0000" && currentWindow.windowSim.memory[99] != "") {
+            if (currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "x0000" && currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "+0000" && currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "") {
                 return false; // Memory is full
             }
-            for (int i = 98; i >= index; i--) {
+            for (int i = currentWindow.memorySize - 2; i >= index; i--) {
                 currentWindow.windowSim.memory[i + 1] = currentWindow.windowSim.memory[i];
-            if (Simulator.memory[max_index] != "x0000" && Simulator.memory[max_index] != "+0000" && Simulator.memory[max_index] != "") {
-                return false; // Memory is full
             }
-            for (int i = max_index - 1; i >= index; i--) {
-                Simulator.memory[i + 1] = Simulator.memory[i];
-            }
+            //if (Simulator.memory[max_index] != "x0000" && Simulator.memory[max_index] != "+0000" && Simulator.memory[max_index] != "") {
+            //    return false; // Memory is full
+            //}
+            //for (int i = max_index - 1; i >= index; i--) {
+            //    Simulator.memory[i + 1] = Simulator.memory[i];
+            //}
             currentWindow.windowSim.memory[index] = "x0000";
             return true;
             };
@@ -340,16 +337,16 @@ int main(int, char**)
         // Lambda to shift memory elements up (Delete)
         auto shiftUp = [&](int index) {
           //CHANGE SO CURRENTWINDOW DOES THE MAX INDEX THING
-            for (int i = index; i < 99; i++) {
+            for (int i = index; i < currentWindow.memorySize - 1; i++) {
                 currentWindow.windowSim.memory[i] = currentWindow.windowSim.memory[i + 1];
             }
-            currentWindow.windowSim.memory[99] = "x0000";
-            };
-          ONCE CHANGED ABOVE, DELETE THIS STUFF BELOW
-            for (int i = index; i < max_index; i++) {
-                Simulator.memory[i] = Simulator.memory[i + 1];
-            }
-            Simulator.memory[max_index] = "x0000";
+            currentWindow.windowSim.memory[currentWindow.memorySize - 1] = "x0000";
+         
+          //ONCE CHANGED ABOVE, DELETE THIS STUFF BELOW
+            //for (int i = index; i < max_index; i++) {
+            //    Simulator.memory[i] = Simulator.memory[i + 1];
+            //}
+            //Simulator.memory[max_index] = "x0000";
         };
 
         if (!memoryErrorMsg.empty()) {
@@ -360,6 +357,7 @@ int main(int, char**)
 
         ImGui::TextDisabled("Right-click any address for editing options (Insert/Delete/Copy...)");
         ImGui::Separator();
+        
 
         // Start scrollable region for memory locations
         ImGui::BeginChild("MemoryScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
@@ -367,7 +365,7 @@ int main(int, char**)
         // Disable modifications if the simulation is currently running
         ImGui::BeginDisabled(currentWindow.getRunning());
 
-        for (int x = 0; x < memory_size; x++) {
+        for (int x = 0; x < currentWindow.memorySize; x++) {
             ImGui::PushID(x);
 
             // Display line number
@@ -390,15 +388,15 @@ int main(int, char**)
                 // 1. Insert Above
                 if (ImGui::MenuItem("Insert Above")) {
                     if (!shiftDown(x)) {
-                        memoryErrorMsg = "Cannot insert: Memory is full (address " + std::to_string(max_index) + " is occupied).";
+                        memoryErrorMsg = "Cannot insert: Memory is full (address " + std::to_string(currentWindow.memorySize) + " is occupied).";
                     }
                 }
             
                 // 2. Insert Below
                 if (ImGui::MenuItem("Insert Below")) {
                     // Check if we are already at the very last possible index
-                    if (x >= max_index || !shiftDown(x + 1)) {
-                        memoryErrorMsg = "Cannot insert: Memory is full (address " + std::to_string(max_index) + " is occupied).";
+                    if (x >= currentWindow.memorySize || !shiftDown(x + 1)) {
+                        memoryErrorMsg = "Cannot insert: Memory is full (address " + std::to_string(currentWindow.memorySize) + " is occupied).";
                     }
                 }
             
@@ -420,16 +418,16 @@ int main(int, char**)
                 // 3. Paste (Insert)
                 if (ImGui::MenuItem("Paste (Insert)")) {
                     if (shiftDown(x)) {
-                      //CHANGE TO BE LIKE BELOW
+                        //CHANGE TO BE LIKE BELOW
                         currentWindow.windowSim.memory[x] = copiedInstruction;
                     }
                     else {
                         memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
-                      //DELETE ONCE ABOVE IS LIKE THIS
-                        Simulator.memory[x] = copiedInstruction;
-                    } else {
-                        memoryErrorMsg = "Cannot paste: Memory is full (address " + std::to_string(max_index) + " is occupied).";
-                    }
+                        //DELETE ONCE ABOVE IS LIKE THIS
+                          //Simulator.memory[x] = copiedInstruction;
+                    } //else {
+                        //memoryErrorMsg = "Cannot paste: Memory is full (address " + std::to_string(max_index) + " is occupied).";
+                    
                 }
             
                 if (ImGui::MenuItem("Paste (Overwrite)")) {
@@ -512,10 +510,10 @@ int main(int, char**)
 
         ImGui::SameLine();
         if (ImGui::Button("Clear")) {
-            for (size_t i = 0; i < 100; i++) {   //MAKE LEFT TO BE LIKE BELOW AND GO UNTIL MEMORY SIZE
+            for (size_t i = 0; i < currentWindow.memorySize; i++) {   //MAKE LEFT TO BE LIKE BELOW AND GO UNTIL MEMORY SIZE
                 currentWindow.windowSim.memory[i] = "x0000"; //resets all memory loactions to zero
-            for (size_t i = 0; i < memory_size; i++){ //DELETE LEFT ONCE ABOVE IS LIKE LEFT
-                Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
+            //for (size_t i = 0; i < memory_size; i++){ //DELETE LEFT ONCE ABOVE IS LIKE LEFT
+            //    Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
             }
             //Stops the function for running and sets the address to 0
             currentWindow.setRunning(false);
@@ -532,8 +530,9 @@ int main(int, char**)
             currentWindow.isBackgroundGreen = !currentWindow.isBackgroundGreen;
             //isBackgroundGreen = !isBackgroundGreen; // Removed because the code doesn't toggle
         }
+        //NEWCOLOR
         //BELOW IS THE STUFF FOR CUSTOMIZING COLOR. ONCE THIS IS FIGURED OUT, PLEASE PUT IN THE WINDOW CLASS
-        ImGui::Text("Background Color (0-255):"); // Labels the RGB controls
+        /*ImGui::Text("Background Color (0-255):"); // Labels the RGB controls
         ImGui::InputInt3("RGB", backgroundColor255); // Lets the user directly type integer RGB values
 
         for (int i = 0; i < 3; i++) { // Keeps each RGB value in the 0-255 range
@@ -561,7 +560,7 @@ int main(int, char**)
             backgroundColor255[1] = 255;
             backgroundColor255[2] = 255;
             backgroundColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-        }
+        }*/
 
 
         ImGui::End();
@@ -605,16 +604,16 @@ int main(int, char**)
                     fileError = "";
                     currentWindow.windowSim.address = 0;
                   //CHANGE SO THE CURRENTWINDOW HAS MEMORYSIZE INSTEAD OF JUST A STRICT 100
-                    for (int i = 0; i < 100; i++) { currentWindow.windowSim.memory[i] = "x0000"; }
-                    Simulator.address = 0;
-                    for (int i = 0; i < memory_size; i++){Simulator.memory[i] = "x0000";}
+                    for (int i = 0; i < currentWindow.memorySize; i++) { 
+                        currentWindow.windowSim.memory[i] = "x0000"; 
+                    }
+        
 
                     std::string line;
 
                     while (file >> line)
-                    {    //CHANGE BELOW IS 100 IS CHANGED TO MEMORYSIZE
-                        if (currentWindow.windowSim.address >= 100)
-                        if (Simulator.address >= memory_size)
+                    {    //CHANGE BELOW 100 TO MEMORYSIZE
+                        if (currentWindow.windowSim.address >= currentWindow.memorySize)
                         {
                             fileError = "Error: Program too large for memory.";
                             break;
@@ -645,10 +644,8 @@ int main(int, char**)
                 }
                 else
                 {
-                    for (int i = 0; i < 100; i++) { //CHANGE TO MEMORY SIZE INSTEAD OF A STRICT 100
+                    for (int i = 0; i < currentWindow.memorySize; i++) { //CHANGE TO MEMORY SIZE INSTEAD OF A STRICT 100
                         outFile << currentWindow.windowSim.memory[i] << "\n";
-                    for (int i = 0; i < memory_size; i++) {
-                        outFile << Simulator.memory[i] << "\n";
                     }
                     outFile.close();
                     fileError = "";
@@ -696,30 +693,33 @@ int main(int, char**)
         ImGui::Render();
         //THis dont seem to do anything: const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
         
-
-        const float activeBackgroundColor[4] = { // Converts the current ImGui background color into the float array DirectX expects
+        //NEWCOLOR
+        /*const float activeBackgroundColor[4] = { // Converts the current ImGui background color into the float array DirectX expects
             backgroundColor.x,
             backgroundColor.y,
             backgroundColor.z,
             backgroundColor.w
-        };
+        };*/
 
         //Removed if statement makes the background green if isBackgroundGreen is true, and white if false
 
-         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr); // Added to bind the main render target before clearing and drawing
-        g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, activeBackgroundColor); // Added to clear the background using the user-selected RGB color
+        g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr); // Added to bind the main render target before clearing and drawing
+        //NEWCOLOR
+        //g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, activeBackgroundColor); // Added to clear the background using the user-selected RGB color
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Added to render the ImGui interface after clearing with the chosen custom color
 
         //this if statement makes the background green if isBackgroundGreen is true, and white if false
           //THIS WILL NEED TO CHANGE FOR WHEN THE CUSTOMIZE COLOR STUFF HAPPENS
         if (currentWindow.isBackgroundGreen) {
             g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
+            //NEWCOLOR
+            //g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
         }
         else {
             g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
+            //NEWCOLOR
+            //g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
         }
 
