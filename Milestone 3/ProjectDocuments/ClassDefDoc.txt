@@ -110,3 +110,106 @@ FUNCTIONS:
          Return Value: const vector<string>& (reference to the list of strings).
          Pre-condition: None.
          Post-condition: Returns the current state of logs without allowing modification.
+----------------------------------------------------------------
+CLASS: Window
+----------------------------------------------------------------
+PURPOSE: 
+    Allows the GUI to have multiple Windows. Keeps track of things like which UVSim it has,
+    if the background is green, whether it is stopped or running, and other things.
+
+FIELDS:
+    1. Stopped(bool)
+    2. Running(bool)
+    3. timer(float)
+    4. windowSim(UVSim): 
+    5. readInput(string): 
+    6. waitingForRead(bool)
+    7. openFile(bool)
+    8. done(bool)
+    9. consoleInput(string)
+    10. isBackgroundGreen(bool)
+FUNCTIONS:
+    1. incrementTime
+         Purpose: Increments the time on the timer.
+         Paramaters: 
+            time(float): an amount of time for the class to increment the timer.
+         Return Value: None.
+         Pre-condition: The previous time on the timer.
+         Post-condition: The new, updated time on the timer.
+    2. memory
+         Purpose: 
+         Paramaters:
+            where(int): where in the memory to update.
+            value(int): value to update in the UVSim memory.
+         Return Value: None.
+         Pre-condition:
+         Post-condition:
+    3. execute
+         Purpose: Executes the UVSim's method, Execute, which carries out the logic of UVSim.
+         Paramaters: None.
+         Return Value: bool
+         Pre-condition: None.
+         Post-condition: Changes the UVSim to execute whatever program is in the memory.
+    4. isRunning
+         Purpose: Checks if the program is running, stopped, 
+         and waiting for read. If it is running and not stopped and not waiting for read, then it returns
+         true.
+         Paramaters: None.
+         Return Value: bool
+         Pre-condition: None.
+         Post-condition: None.
+    5. getRunning
+         Purpose: The getter to see if the window is running. Returns true when the window is running.
+         Paramaters: None.
+         Return Value: bool. True if the window is running, false if it is not.
+         Pre-condition: None.
+         Post-condition: None.
+    6. setRunning
+         Purpose: Deals with setting if running is true or false.
+         Paramaters:
+         Return Value: None.
+         Pre-condition:
+         Post-condition:
+    7. getStopped
+         Purpose: 
+         Paramaters:
+         Return Value:
+         Pre-condition:
+         Post-condition:
+    8. setStopped
+         Purpose: 
+         Paramaters:
+         Return Value: None.
+         Pre-condition:
+         Post-condition:
+    9. getTimer
+         Purpose: 
+         Paramaters:
+         Return Value:
+         Pre-condition:
+         Post-condition:
+    10. setTimer
+         Purpose: 
+         Paramaters:
+         Return Value: None.
+         Pre-condition:
+         Post-condition:
+----------------------------------------------------------------
+CLASS: Tab
+----------------------------------------------------------------
+PURPOSE: 
+    Keeps track of a Window and keeps track of the tabs ID.
+
+FIELDS:
+    1. open (bool): A flag indicating if the tab is currently active in the UI. When false, the tab is flagged for removal from the session.
+    2. tabWindow (Window): The core simulation instance and GUI state associated with this specific tab.
+    3. nextTabId (inline static int): A shared counter used to assign unique identifiers to every new tab instance.
+    4. id (int): The unique numerical identifier for the specific tab instance.
+
+FUNCTIONS:
+    1. Tab (Constructor)
+        Purpose: Initializes a new tab instance and ensures it receives a unique ID.
+        Parameters: None.
+        Return Value: N/A (Constructor).
+        Pre-condition: None.
+        Post-condition: The id is set to the current value of nextTabId, and nextTabId is incremented by one.

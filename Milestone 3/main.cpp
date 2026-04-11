@@ -20,6 +20,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring> // Added for strncpy
+#include <cstdio> // Added for sprint
+
 #include <algorithm> // Added so std::min, std::max, and std::swap
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -36,18 +38,31 @@ void CreateRenderTarget();
 void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-// Main code
-int main(int, char**)
-{
 
-    UVSim Simulator{};
+//keeps track of the next Tab ID number
+
+
+class Window {
     bool Stopped = false;
     bool Running = false;
-    static float timer = 0.0f;
+    float timer = 0.0f;
+
+public:
+    UVSim windowSim;
     std::string readInput = "";
     bool waitingForRead = false;
     bool openFile = false;
+    bool done = false;
+    std::string consoleInput = ""; 
+    bool isBackgroundGreen = true;
 
+  //CHANGE so the memory now has 250 instead of 100
+    Window() {
+        //starts the memory with x0000
+        for (size_t i = 0; i < 100; i++)
+        {
+            windowSim.memory[i] = "x0000";
+        }
     constexpr int memory_size = 250;
     constexpr int max_index = memory_size - 1;
     
@@ -55,7 +70,78 @@ int main(int, char**)
     {
         Simulator.memory[i] = "x0000";
     }
-    
+    void incrementTime(float time) {
+        timer += time;
+    }
+
+    void memory(int where, int value) {
+        windowSim.memory[where] = value;
+    }
+
+    bool execute() {
+        return windowSim.Execute();
+    }
+    bool isRunning();
+    bool getRunning();
+    void setRunning(bool myBool);
+    bool getStopped();
+    void setStopped(bool myBool);
+    float getTimer();
+    void setTimer(float newTime);
+};
+
+bool Window::isRunning() {
+    return (Running && !Stopped && !waitingForRead);
+}
+
+bool Window::getRunning() {
+    return Running;
+}
+
+void Window::setRunning(bool myBool) {
+    Running = myBool;
+}
+
+bool Window::getStopped() {
+    return Stopped;
+}
+
+void Window::setStopped(bool myBool) {
+    Stopped = myBool;
+}
+
+float Window::getTimer() {
+    return timer;
+}
+
+void Window::setTimer(float newTime) {
+    timer = newTime;
+}
+
+
+struct Tab {
+    bool open = true;
+    Window tabWindow;
+    inline static int nextTabId = 0;
+    int id;
+
+    Tab(){  
+        //increases Tab ID for the next Tab
+        id = nextTabId;
+        nextTabId++;
+    }
+};
+
+
+// Main code
+int main(int, char**)
+{
+    std::vector<Tab> Tabs;
+    Tab mainTab;
+    Tabs.push_back(mainTab);
+    int whichTabToShow = 0;
+    std::string readInput = "";
+
 
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
@@ -112,18 +198,6 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
-    bool showLines = true;
-   
-    std::string consoleInput = "";
-    //isBackgroundGreen keeps track if the background is green or not
-    //bool isBackgroundGreen = true;
-    ImVec4 backgroundColor = ImVec4(0.298f, 0.447f, 0.114f, 1.0f); // Added to store the current background color as RGB
-    static int backgroundColor255[3] = { 76, 114, 29 }; // Added to store editable RGB values in 0-255
-
-    std::vector<std::string> clipboardLines; // Added to store multiple copied memory lines instead of only one line
-    int selectionStart = -1; // Added to track the starting row of the selected memory block
-    int selectionEnd = -1; // Added to track the ending row of the selected memory block
-
 
     while (!done)
     {
@@ -161,73 +235,117 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        timer += io.DeltaTime;
-
-        if (Running && !Stopped && !waitingForRead)
-        {
-            
-            if (timer > 0.5f)
-            {
-                bool result = true;
-
-                try {
-                    result = Simulator.Execute();
+        //goes through to see if any of the Tabs need to be closed
+        for (int x = 0; x < Tabs.size(); x++) {
+            if (Tabs[x].open == false) {
+                //if there is more than 1 tabs in the Tabs, it is able to close the current tab
+                if (Tabs.size() > 1) {
+                    Tabs.erase(Tabs.begin() + x);
+                    x--;
                 }
-                catch (const std::exception& e) {
-                    Simulator.AppendOutput(e.what());
-                    Running = false;
-                    Stopped = true;
-                    result = false;
+                //if there is one tab in Tabs, don't close the tab
+                else {
+                    Tabs[x].open = true;
                 }
-
-                if (!result)
-                {
-                    std::string cmd = Simulator.memory[Simulator.address].substr(1,2);
-
-                    if (cmd == "10")
-                    {
-                        waitingForRead = true;
-                        Running = false;
-                    }
-                    else if (cmd == "43")
-                    {
-                        Stopped = true;
-                        Running = false;
-                    }
-                }
-
-                timer = 0;
             }
         }
-
-        
-
         //The start of the Memory Window
         ImVec2 halfSize(io.DisplaySize.x * 0.4f, io.DisplaySize.y * 0.9f);
         ImVec2 leftSection(io.DisplaySize.x * 0.05f, io.DisplaySize.y * 0.05f);
         ImGui::SetNextWindowSize(halfSize, ImGuiCond_Always);
         ImGui::SetNextWindowPos(leftSection, ImGuiCond_Always);
         ImGui::Begin("Memory", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        
+        ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.00f, 0.50f, 1.00f, 1.00f));
+        if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable)) {
+            for (int n = 0; n < Tabs.size(); n++) {
+                char name[32];
+                int tabId = Tabs[n].id;
+                sprintf(name, "Tab %d", tabId);
+                if (ImGui::BeginTabItem(name, &Tabs[n].open)) {
+                    whichTabToShow = n;
+                    ImGui::EndTabItem();
+                }
+            }
+                if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoReorder)) {
+                    Tab newTab;
+                    Tabs.push_back(newTab);
+                }
+            ImGui::EndTabBar();
+        }
+        ImGui::PopStyleColor(1);
+        Window& currentWindow = Tabs[whichTabToShow].tabWindow;
+        float newTime = io.DeltaTime;
+        currentWindow.incrementTime(newTime);
+
+        if (currentWindow.isRunning())
+        {
+
+            if (currentWindow.getTimer() > 0.5f)
+            {
+                bool result = true;
+
+                try {
+                    result = currentWindow.windowSim.Execute();
+                }
+                catch (const std::exception& e) {
+                    currentWindow.windowSim.AppendOutput(e.what());
+                    currentWindow.setRunning(false);
+                    currentWindow.setStopped(true);
+                    result = false;
+                }
+
+                if (!result)
+                {
+                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
+
+                    if (cmd == "10")
+                    {
+                        currentWindow.waitingForRead = true;
+                        currentWindow.setRunning(false);
+                    }
+                    else if (cmd == "43")
+                    {
+                        currentWindow.setStopped(true);
+                        currentWindow.setRunning(false);
+                    }
+                }
+
+                currentWindow.setTimer(0);
+            }
+        }
+
         // Static variables for clipboard and context menu error state
         static std::string copiedInstruction = "x0000";
         static std::string memoryErrorMsg = "";
 
         // Lambda to shift memory elements down (Insert)
         auto shiftDown = [&](int index) -> bool {
+          //UPDATE CURRENT WINDOW TO DO SIMILAR THINGS TO THE MAX INDEX
             // Check if the last memory address is already occupied by a valid instruction
+            if (currentWindow.windowSim.memory[99] != "x0000" && currentWindow.windowSim.memory[99] != "+0000" && currentWindow.windowSim.memory[99] != "") {
+                return false; // Memory is full
+            }
+            for (int i = 98; i >= index; i--) {
+                currentWindow.windowSim.memory[i + 1] = currentWindow.windowSim.memory[i];
             if (Simulator.memory[max_index] != "x0000" && Simulator.memory[max_index] != "+0000" && Simulator.memory[max_index] != "") {
                 return false; // Memory is full
             }
             for (int i = max_index - 1; i >= index; i--) {
                 Simulator.memory[i + 1] = Simulator.memory[i];
             }
-            Simulator.memory[index] = "x0000";
+            currentWindow.windowSim.memory[index] = "x0000";
             return true;
-        };
+            };
 
         // Lambda to shift memory elements up (Delete)
         auto shiftUp = [&](int index) {
+          //CHANGE SO CURRENTWINDOW DOES THE MAX INDEX THING
+            for (int i = index; i < 99; i++) {
+                currentWindow.windowSim.memory[i] = currentWindow.windowSim.memory[i + 1];
+            }
+            currentWindow.windowSim.memory[99] = "x0000";
+            };
+          ONCE CHANGED ABOVE, DELETE THIS STUFF BELOW
             for (int i = index; i < max_index; i++) {
                 Simulator.memory[i] = Simulator.memory[i + 1];
             }
@@ -247,7 +365,7 @@ int main(int, char**)
         ImGui::BeginChild("MemoryScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
         // Disable modifications if the simulation is currently running
-        ImGui::BeginDisabled(Running);
+        ImGui::BeginDisabled(currentWindow.getRunning());
 
         for (int x = 0; x < memory_size; x++) {
             ImGui::PushID(x);
@@ -259,12 +377,12 @@ int main(int, char**)
 
             // Text input for direct manual changes
             char buf[16];
-            strncpy(buf, Simulator.memory[x].c_str(), sizeof(buf));
+            strncpy_s(buf, currentWindow.windowSim.memory[x].c_str(), sizeof(buf));
             buf[sizeof(buf) - 1] = '\0';
 
             ImGui::SetNextItemWidth(120.0f);
             if (ImGui::InputText("##memInput", buf, sizeof(buf))) {
-                Simulator.memory[x] = buf;
+                currentWindow.windowSim.memory[x] = buf;
             }
 
             // Context menu for cut, copy, paste, insert, delete
@@ -291,17 +409,23 @@ int main(int, char**)
                 ImGui::Separator();
             
                 if (ImGui::MenuItem("Cut")) {
-                    copiedInstruction = Simulator.memory[x];
+                    copiedInstruction = currentWindow.windowSim.memory[x];
                     shiftUp(x);
                 }
             
                 if (ImGui::MenuItem("Copy")) {
-                    copiedInstruction = Simulator.memory[x];
+                    copiedInstruction = currentWindow.windowSim.memory[x];
                 }
             
                 // 3. Paste (Insert)
                 if (ImGui::MenuItem("Paste (Insert)")) {
                     if (shiftDown(x)) {
+                      //CHANGE TO BE LIKE BELOW
+                        currentWindow.windowSim.memory[x] = copiedInstruction;
+                    }
+                    else {
+                        memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
+                      //DELETE ONCE ABOVE IS LIKE THIS
                         Simulator.memory[x] = copiedInstruction;
                     } else {
                         memoryErrorMsg = "Cannot paste: Memory is full (address " + std::to_string(max_index) + " is occupied).";
@@ -309,7 +433,7 @@ int main(int, char**)
                 }
             
                 if (ImGui::MenuItem("Paste (Overwrite)")) {
-                    Simulator.memory[x] = copiedInstruction;
+                    currentWindow.windowSim.memory[x] = copiedInstruction;
                 }
             
                 ImGui::EndPopup();
@@ -338,10 +462,10 @@ int main(int, char**)
 
         ImGui::Begin("Status", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-        ImGui::Text("Accumulator = %d", Simulator.accumulator);
-        ImGui::Text("Current Address = %d", Simulator.address);
+        ImGui::Text("Accumulator = %d", currentWindow.windowSim.accumulator);
+        ImGui::Text("Current Address = %d", currentWindow.windowSim.address);
 
-        if (Stopped)
+        if (currentWindow.getStopped())
             ImGui::Text("Stopped = True");
         else
             ImGui::Text("Stopped = False");
@@ -349,21 +473,21 @@ int main(int, char**)
         
 
         if (ImGui::Button("Step")) {
-            if (!Stopped){
+            if (!currentWindow.getStopped()) {
 
-                bool result = Simulator.Execute();
+                bool result = currentWindow.windowSim.Execute();
 
                 if (!result)
                 {
-                    std::string cmd = Simulator.memory[Simulator.address].substr(1,2);
+                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
 
                     if (cmd == "10")
                     {
-                        waitingForRead = true;
+                        currentWindow.waitingForRead = true;
                     }
                     else if (cmd == "43")
                     {
-                        Stopped = true;
+                        currentWindow.setStopped(true);
                     }
                 }
             }
@@ -371,41 +495,44 @@ int main(int, char**)
 
         ImGui::SameLine();
         if (ImGui::Button("Run")) {
-            Running = true;
-            Stopped = false;
+            currentWindow.setRunning(true);
+            currentWindow.setStopped(false);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Stop")) {
-            Running = false;
-            Stopped = true;
+            currentWindow.setRunning(false);
+            currentWindow.setStopped(true);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Continue")) {
-            Stopped = false;
+            currentWindow.setStopped(false);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Clear")) {
-            for (size_t i = 0; i < memory_size; i++){
+            for (size_t i = 0; i < 100; i++) {   //MAKE LEFT TO BE LIKE BELOW AND GO UNTIL MEMORY SIZE
+                currentWindow.windowSim.memory[i] = "x0000"; //resets all memory loactions to zero
+            for (size_t i = 0; i < memory_size; i++){ //DELETE LEFT ONCE ABOVE IS LIKE LEFT
                 Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
             }
             //Stops the function for running and sets the address to 0
-            Running = false;
-            Stopped = true;
-            Simulator.address = 0;
-            Simulator.accumulator = 0;
-            waitingForRead = false;
-            Simulator.ClearOutput();
-            openFile = false;
+            currentWindow.setRunning(false);
+            currentWindow.setStopped(true);
+            currentWindow.windowSim.address = 0;
+            currentWindow.windowSim.accumulator = 0;
+            currentWindow.waitingForRead = false;
+            currentWindow.windowSim.ClearOutput();
+            currentWindow.openFile = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Color")) {
             //switches the color from green to white or white to green
+            currentWindow.isBackgroundGreen = !currentWindow.isBackgroundGreen;
             //isBackgroundGreen = !isBackgroundGreen; // Removed because the code doesn't toggle
         }
-
+        //BELOW IS THE STUFF FOR CUSTOMIZING COLOR. ONCE THIS IS FIGURED OUT, PLEASE PUT IN THE WINDOW CLASS
         ImGui::Text("Background Color (0-255):"); // Labels the RGB controls
         ImGui::InputInt3("RGB", backgroundColor255); // Lets the user directly type integer RGB values
 
@@ -460,12 +587,12 @@ int main(int, char**)
 
         static std::string fileError = "";
 
-        if (!openFile){
+        if (!currentWindow.openFile) {
             ImGui::Text("Enter file path:");
-            ImGui::InputText("##fileinput", &consoleInput);
+            ImGui::InputText("##fileinput", &currentWindow.consoleInput);
 
-            if (ImGui::Button("Load File")){
-                std::string fullPath = consoleInput;
+            if (ImGui::Button("Load File")) {
+                std::string fullPath = currentWindow.consoleInput;
 
                 std::ifstream file(fullPath);
 
@@ -476,32 +603,36 @@ int main(int, char**)
                 else
                 {
                     fileError = "";
+                    currentWindow.windowSim.address = 0;
+                  //CHANGE SO THE CURRENTWINDOW HAS MEMORYSIZE INSTEAD OF JUST A STRICT 100
+                    for (int i = 0; i < 100; i++) { currentWindow.windowSim.memory[i] = "x0000"; }
                     Simulator.address = 0;
                     for (int i = 0; i < memory_size; i++){Simulator.memory[i] = "x0000";}
 
                     std::string line;
 
                     while (file >> line)
-                    {
+                    {    //CHANGE BELOW IS 100 IS CHANGED TO MEMORYSIZE
+                        if (currentWindow.windowSim.address >= 100)
                         if (Simulator.address >= memory_size)
                         {
                             fileError = "Error: Program too large for memory.";
                             break;
                         }
 
-                        Simulator.memory[Simulator.address++] = line;
+                        currentWindow.windowSim.memory[currentWindow.windowSim.address++] = line;
                     }
 
-                    Simulator.address = 0;
+                    currentWindow.windowSim.address = 0;
                     file.close();
-                    openFile = true;
+                    currentWindow.openFile = true;
 
-                    Simulator.AppendOutput("File loaded Successfully");
+                    currentWindow.windowSim.AppendOutput("File loaded Successfully");
                 }
             }
         }
 
-        if(openFile){
+        if (currentWindow.openFile) {
             static std::string savePath = "";
             ImGui::InputText("Save Path", &savePath);
 
@@ -514,29 +645,31 @@ int main(int, char**)
                 }
                 else
                 {
+                    for (int i = 0; i < 100; i++) { //CHANGE TO MEMORY SIZE INSTEAD OF A STRICT 100
+                        outFile << currentWindow.windowSim.memory[i] << "\n";
                     for (int i = 0; i < memory_size; i++) {
                         outFile << Simulator.memory[i] << "\n";
                     }
                     outFile.close();
                     fileError = "";
-                    Simulator.AppendOutput("File saved successfully");
-                    openFile = false;
+                    currentWindow.windowSim.AppendOutput("File saved successfully");
+                    currentWindow.openFile = false;
                 }
             }
         }
 
-        if (waitingForRead)
+        if (currentWindow.waitingForRead)
         {
             ImGui::Separator();
             ImGui::Text("READ Instruction Input:");
-            ImGui::InputText("##readinput", &readInput);
+            ImGui::InputText("##readinput", &currentWindow.readInput);
 
             if (ImGui::Button("Submit Input"))
             {
-                Simulator.READ(readInput);
-                waitingForRead = false;
-                readInput.clear();
-                Simulator.address++; 
+                currentWindow.windowSim.READ(currentWindow.readInput);
+                currentWindow.waitingForRead = false;
+                currentWindow.readInput.clear();
+                currentWindow.windowSim.address++;
             }
         }
 
@@ -544,7 +677,7 @@ int main(int, char**)
         ImGui::Text("Program Output:");
         ImGui::BeginChild("ConsoleOutput", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), true);
 
-        ImGui::TextWrapped("%s", Simulator.consoleLog.c_str());
+        ImGui::TextWrapped("%s", currentWindow.windowSim.consoleLog.c_str());
 
         // Auto-scroll to bottom
         if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -577,23 +710,36 @@ int main(int, char**)
         g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, activeBackgroundColor); // Added to clear the background using the user-selected RGB color
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Added to render the ImGui interface after clearing with the chosen custom color
 
+        //this if statement makes the background green if isBackgroundGreen is true, and white if false
+          //THIS WILL NEED TO CHANGE FOR WHEN THE CUSTOMIZE COLOR STUFF HAPPENS
+        if (currentWindow.isBackgroundGreen) {
+            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
+            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        }
+        else {
+            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+            g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
+            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        }
 
         // Present
         HRESULT hr = g_pSwapChain->Present(1, 0);   // Present with vsync
         //HRESULT hr = g_pSwapChain->Present(0, 0); // Present without vsync
         g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
+
     }
+        // Cleanup
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
 
-    // Cleanup
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
-
-    CleanupDeviceD3D();
-    ::DestroyWindow(hwnd);
-    ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
-
-    return 0;
+        CleanupDeviceD3D();
+        ::DestroyWindow(hwnd);
+        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+    
+        return 0;
+    
 }
 
 // Helper functions
