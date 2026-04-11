@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 #pragma once
 
 void READ(int memory_address);
