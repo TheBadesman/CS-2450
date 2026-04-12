@@ -2,142 +2,193 @@
 The main class for the Milestone 2 UVSIM
 */
 
+#include "UVSim.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
+
 using namespace std;
 
-class UVSim
+UVSim::UVSim(){
+    accumulator = 0;
+    address = 0;
+}
+
+void UVSim::AppendOutput(const std::string& text)
 {
-public:
 
-    string memory[100] {};
-    int accumulator{};
-    int address{};
+    if (consoleLog.length() > 5000){consoleLog.clear();}
 
-    string get(string memory[100], int memory_address){
-    if (memory_address < 0 || memory_address >= 100) {
-        cout << "Memory access out of bounds!" << endl;
-        exit(1);
-        }
+    consoleLog += text + "\n";
+}
+
+void UVSim::ClearOutput()
+{
+    consoleLog.clear();
+}
+
+string UVSim::get(int memory_address){
+    if (memory_address < 0 || memory_address >= 250) {
+        AppendOutput("Memory access out of bounds!");
+        throw std::runtime_error("message");
+    }
     return memory[memory_address];
+}
+
+void UVSim::READ(const std::string& input)
+{
+    // Validate instruction format first
+    if (memory[address].length() < 7)
+    {
+        AppendOutput("Invalid instruction format in memory");
+        throw runtime_error("Invalid instruction format");
     }
 
+    // Validate user input
+    if (input.length() != 7)
+    {
+        AppendOutput("Input must be 7 characters (+000000 or -000000)");
+        throw runtime_error("Invalid input length");
+    }
 
-    void READ(int memory_address){
-        try{
-                string input;
-                cout << "Input the sign + or - then the four digit word you want, if data insert opcode 00 then the number you wish thats two digits so if i wanted 69, +0069, if negative 69, -0069: " << std::endl;
-                cin >> input;
-                if (input.length() != 5){//length can only be 5 characters long
-                        throw out_of_range("Your input is either too short or too long!");
-                }else if (input[0] != '-' && input[0] != '+'){
-                        throw invalid_argument("Instruction read does not hold a sign, it needs to be a signed number dog");
-                }for (size_t i = 1; i < input.length(); i++){
-                        if (isdigit(input[i]) == false){
-                                throw invalid_argument("Instruction read is not a number");
-                        }
-                }
-                memory[memory_address] = input;
-        }catch(const invalid_argument& e){//reference so you dont copy the exception object
-                cout << "You didnt enter a number at all..." << endl;
-                exit(1);
-        }catch(const out_of_range& e){
-                cout << "You inputed a number greater or lower than length five(number 4 digits but 5 for potential sign ie -0099)"  << std::endl;
-                exit(1);
+    if (input[0] != '+' && input[0] != '-')
+    {
+        AppendOutput("Input must start with + or -");
+        throw runtime_error("Invalid input sign");
+    }
+
+    for (int i = 1; i < 7; i++)
+    {
+        if (!isdigit(input[i]))
+        {
+            AppendOutput("Input must contain digits only");
+            throw runtime_error("Input contains non-digit characters");
         }
-        catch(...){
-                cout << "Unknown issue :(" << endl;
-                exit(1);
+    }
+
+    try
+    {
+        // Extract operand safely
+        string operandStr = memory[address].substr(4,3);
+
+        int operand = stoi(operandStr);
+
+        if (operand < 0 || operand >= 250)
+        {
+            AppendOutput("READ memory address out of bounds");
+            throw runtime_error("Memory address out of bounds");
         }
+
+        memory[operand] = input;
     }
-
-    void WRITE(int memory_address){
-        cout << "The word stored in " << memory_address << " is " << get(memory, memory_address) << endl;
+    catch (const exception& e)
+    {
+        AppendOutput(e.what());
+        throw;
     }
+}
 
-    //Loads a word from a specific location in memory into the accumulator
-    void LOAD(int& address, int& accumulator){
-            int operand = stoi(memory[address].substr(3,2));
-            accumulator = stoi(memory[operand]);
-    };
+void UVSim::WRITE(int memory_address){
+    AppendOutput("The word stored in " + std::to_string(memory_address) + " is " + get(memory_address));
+}
 
-    //Stores a word from the accumulator into a specific location in memory
-    void STORE(int& address, int& accumulator){
-            int operand = stoi(memory[address].substr(3,2));
-            string val = (accumulator >= 0 ? "+" : "") + to_string(accumulator);
-            while (val.length() < 5) val.insert(1, "0");
-            memory[operand] = val;
-    };
+void UVSim::LOAD(){
+        int operand = stoi(memory[address].substr(4,3));
+        accumulator = stoi(memory[operand]);
+}
 
-    //Adds a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator)
-    int ADD(int accum, string location){
-        //I need to VALIDATE INPUT ON EACH MATH FUNCTION AND MAKE ERROR HANDLING FOR THAT
+void UVSim::STORE(){
+        int operand = stoi(memory[address].substr(4,3));
+        string val = (accumulator >= 0 ? "+" : "") + to_string(accumulator);
+        while (val.length() < 7) val.insert(1, "0");
+        memory[operand] = val;
+}
+
+int UVSim::ADD(int accum, string location){
         int location_integer = stoi(location);
         try {
-            int to_return = accum + stoi(memory[location_integer]);
-            return to_return;
+            return accum + stoi(memory[location_integer]);
         }
         catch (...) {
-            cout << "Please input only numbers" << endl;
-            throw runtime_error("Invalid ADD operation");
+                AppendOutput("Please input only numbers");
+                throw runtime_error("Invalid ADD operation");
         }
-    };
+}
 
-    //Subtracts a word from a specific location in memory from the word in the accumulator (leaves the result in the accumulator)
-    int SUBTRACT(int accum, string location){
+int UVSim::SUBTRACT(int accum, string location){
         int location_integer = stoi(location);
-        int to_return = accum - stoi(memory[location_integer]);
-        return to_return;
-    };
+        return accum - stoi(memory[location_integer]);
+}
 
-    //Divides the word in the accumulator by a word from a specific location in memory (leaves the result in the accumulator).
-    int DIVIDE(int accum, string location){
-        int location_integer = stoi(location); //Catch divide by zero
-        if (memory[location_integer] == "0") {
-            //cerr << "Divide by zero error" << endl;
-            throw runtime_error("Divide by zero error");
+int UVSim::DIVIDE(int accum, string location){
+        int location_integer = stoi(location);
+        if (stoi(memory[location_integer]) == 0) {
+                throw runtime_error("Divide by zero error");
         }
         else {
-            int to_return = accum / stoi(memory[location_integer]);
-            return to_return;
+            return accum / stoi(memory[location_integer]);
         }
+}
 
-
-    };
-
-    //multiplys a word from a specific location in memory to the word in the accumulator (leaves the result in the accumulator).
-    int MULTIPLY(int accum, string location){
+int UVSim::MULTIPLY(int accum, string location){
         int location_integer = stoi(location);
-        int to_return = accum * stoi(memory[location_integer]);
-        return to_return;
-    };
+        return accum * stoi(memory[location_integer]);
+}
 
-    //Branchs to a specific location in memory
-    int BRANCH(int memory_address){
+int UVSim::BRANCH(int memory_address){
         return memory_address;
-    };
+}
 
-    //Branchs to a specific location in memory if the accumulator is negative.
-    int BRANCHNEG(int accumulator,int old_address, int memory_address){
-        //checks if the accumaltor is less then zero, and branches if it is
+int UVSim::BRANCHNEG(int accumulator,int old_address, int memory_address){
         if (accumulator < 0){
-            return memory_address;
+                return memory_address;
         }
-
-        //returns the old address if it is not
         return old_address;
-    };
+}
 
-    //Branchs to a specific location in memory if the accumulator is zero
-    int BRANCHZERO(int accumulator, int old_address, int memory_address){
-        //checks if the accumaltor is equal to zero, and branches if it is
+int UVSim::BRANCHZERO(int accumulator, int old_address, int memory_address){
         if (accumulator == 0){
-            return memory_address;
+                return memory_address;
         }
-
-        //returns the old address if it is not
         return old_address;
-    };
-};
+}
+
+bool UVSim::Execute(){
+        string command = memory[address].substr(1,3);
+        string location = memory[address].substr(4,3);
+        bool jumped = false;
+
+        if (command == "010") {AppendOutput("Double check input, should start with if it is positive or negative, followed by the four digit input"); return false;}
+            else if (command == "011"){WRITE(stoi(location));}
+            else if (command == "020"){LOAD();}
+            else if (command == "021"){STORE();}
+            else if (command == "030"){accumulator = ADD(accumulator, location);}
+            else if (command == "031"){accumulator = SUBTRACT(accumulator, location);}
+            else if (command == "032"){accumulator = DIVIDE(accumulator, location);}
+            else if (command == "033"){accumulator = MULTIPLY(accumulator, location);}
+            else if (command == "040"){address = BRANCH(stoi(location)); jumped = true;}
+            else if (command == "041"){address = BRANCHNEG(accumulator, address, stoi(location)); jumped = true;}
+            else if (command == "042"){address = BRANCHZERO(accumulator, address, stoi(location)); jumped = true;}
+            else if (command == "043"){
+                AppendOutput("Program halted.");
+                address = 0;
+                return false;
+            }
+        //If we are not doing a read, increase the address
+        if (!jumped && command != "010"){
+                address++;
+        }
+        //exits the execute function
+        return true;
+}
+
+string UVSim::Convert(const string oldWord){
+    string sign = oldWord.substr(0,1);
+    string opcode = oldWord.substr(1,2);
+    string operand = oldWord.substr(3,2);
+
+    return sign + "0" + opcode + "0" + operand;
+}

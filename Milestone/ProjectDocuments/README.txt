@@ -1,50 +1,14 @@
 CS-2450, Milestone 2, Group 6
 Group Members: Cameron Ottley, Jacen Taylor, James Pohl, Davin Lott
-Overview:  UVSim is a simple virtual machine simulator made to help learn basic machine language and how a computer executes instructions. It runs programs written in BasicML, which is a small, assembly-style language. The simulator has a 100-word memory, an accumulator register, and executes instructions one at a time.
+Overview:  UVSim is a simple virtual machine simulator made to help learn basic machine language and how a computer executes instructions. It runs programs written in BasicML, which is a small, assembly-style language. The simulator has a 100-word memory, an accumulator register, and executes instructions one at a time, It now has a GUI with a few minor features appropriate to a gui
 
-There are two main parts to this project. The first part is the simulator itself, which loads a BasicML program from a text file and runs it. The second part is a set of unit tests that make sure each instruction (like ADD, LOAD, BRANCH, etc.) works correctly.
+There are two main parts to this project. The first part is the simulator itself, which loads a BasicML program from a text file and runs it. The second part is the gui logic that takes the other components and adds visual elmenents to stuff
 
-To compile and run this project, you need a C++ compiler that supports C++17 or newer. On Windows, you can use Visual Studio’s cl compiler or MinGW with g++. On macOS, use clang++ from the Xcode Command Line Tools. On Linux, g++ works fine.
+To compile and run this project, you need CMake and C++17 or newer. On Windows, you can use Visual Studio’s cl compiler or terminal, first build by entering Main projects current milestone directory, Milestone 3 here, then either enter or create directory build, ie mkdir or cd to it, then when inside that directory type: 'cmake .. -G "Ninja"' , run that line then type: 'cmake --build . ', the UVSim.exe should be created, to run simply type: './UVSim.exe' . On macOS, use clang++ from the Xcode Command Line Tools, then if not already, Install CMake and Ninja (Homebrew)
+. Now you can do the exact same thing as on windows, mkdir build, cd build, cmake .. -G "Ninja", cmake --build . 
+On Linux, Cmake will work fine, exact same workflow as windows. 
 
-The important files are main.cpp, which contains the simulator logic, and Milestone2UnitTests.h / Milestone2UnitTests.cpp, which define the UVSim class and the unit tests. Both .cpp files should be in the same folder when compiling.
+To run t.txt BasicML programs, follow instructions on Gui Console window, or from list ov availalbe .txt files printed, enter the .txt file you want, if in the program it asks for an input, type that into the newly craeted input section that pops up if that happens. to step through the program one word at a time, press step and that will bring you to the next word in memory. After inputing your text file, to simply run the whole thing, type Run, to stop midway for whatever reason, press stop, to be done with it, press halt, halt doesnt exit program as you might want to look at current stack.
+if you got some message in the program output telling you what you did wrong but it didnt crash, you can press continue to start the simulator logic again and retry whatever minor thing you did that went wrong. 
 
-On macOS or Linux, you can compile the simulator with:
-
-g++ -std=c++17 -o uvsim main.cpp Milestone2UnitTests.cpp
-
-Or using clang:
-
-clang++ -std=c++17 -o uvsim main.cpp Milestone2UnitTests.cpp
-
-On Windows (Developer Command Prompt):
-
-cl /EHsc main.cpp Milestone2UnitTests.cpp
-
-To run the simulator, create a text file containing a BasicML program. Each line should be a signed four-digit number like +1007 or +4300. Run the program (./uvsim on macOS/Linux or main.exe on Windows), then enter the file name when prompted. The simulator prints the accumulator value as the program runs and stops when it reaches a HALT instruction.
-
-BasicML vocabulary defined as follows:
-
-I/O operation:
-READ = 10 Read a word from the keyboard into a specific location in memory.
-WRITE = 11 Write a word from a specific location in memory to screen.
-
-Load/store operations:
-LOAD = 20 Load a word from a specific location in memory into the accumulator.
-STORE = 21 Store a word from the accumulator into a specific location in memory.
-
-Arithmetic operation:
-ADD = 30 Add a word from a specific location in memory to the word in the accumulator (leave the result in the accumulator)
-SUBTRACT = 31 Subtract a word from a specific location in memory from the word in the accumulator (leave the result in the accumulator)
-DIVIDE = 32 Divide the word in the accumulator by a word from a specific location in memory (leave the result in the accumulator).
-MULTIPLY = 33 multiply a word from a specific location in memory to the word in the accumulator (leave the result in the accumulator).
-
-Control operation:
-BRANCH = 40 Branch to a specific location in memory
-BRANCHNEG = 41 Branch to a specific location in memory if the accumulator is negative.
-BRANCHZERO = 42 Branch to a specific location in memory if the accumulator is zero.
-HALT = 43 Pause the program
-
-The last two digits of a BasicML instruction are the operand – the address of the memory location containing the word to which the operation applies.
-
-The unit tests check that all BasicML operations work correctly, including arithmetic, branching, and error cases like division by zero. To run them, compile and run Milestone2UnitTests.cpp by itself. If everything works, the program will print messages saying the tests passed.
 

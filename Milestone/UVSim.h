@@ -1,24 +1,49 @@
-#pragma once
+#ifndef UVSIM_H
+#define UVSIM_H
+
 #include <string>
-#include <vector>
 
 class UVSim
 {
 public:
+    std::string memory[250]{};
+    int accumulator{};
+    int address{};
+    std::string consoleLog{};
+
     UVSim();
 
-    std::vector<int> memory;
-    int accumulator;
-    int programCounter;
-    bool halted;
-    int address;
-    /*bool loadProgram(const std::string& filename);
-    void step();
-    void reset();
+    //Console Functions
+    void AppendOutput(const std::string& text);
+    void ClearOutput();
 
-    bool isHalted() const;
+    // Memory access
+    std::string get(int memory_address);
 
-    int getAccumulator() const;
-    int getProgramCounter() const;
-   */
+    // I/O Operations
+    void READ(const std::string& input);
+    void WRITE(int memory_address);
+
+    // Load/Store
+    void LOAD();
+    void STORE();
+
+    // Arithmetic
+    int ADD(int accum, std::string location);
+    int SUBTRACT(int accum, std::string location);
+    int DIVIDE(int accum, std::string location);
+    int MULTIPLY(int accum, std::string location);
+
+    // Branching
+    int BRANCH(int memory_address);
+    int BRANCHNEG(int accumulator, int old_address, int memory_address);
+    int BRANCHZERO(int accumulator, int old_address, int memory_address);
+
+    //runs the files and builds / returns the strings for the console
+    bool Execute();
+
+    //converts the files from a four digit word to a 6 digit
+    std::string Convert(std::string oldWord);
 };
+
+#endif
