@@ -70,10 +70,6 @@ public:
         timer += time;
     }
 
-    void memory(int where, int value) {
-        windowSim.memory[where] = value;
-    }
-
     bool execute() {
         return windowSim.Execute();
     }
