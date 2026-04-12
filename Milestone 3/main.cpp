@@ -59,11 +59,11 @@ public:
 
   //CHANGE so the memory now has 250 instead of 100
     Window() {
-        //starts the memory with x0000
+        //starts the memory with +000000
             memorySize = std::size(windowSim.memory);
             for (size_t i = 0; i < memorySize; i++)
             {
-                windowSim.memory[i] = "x0000";
+                windowSim.memory[i] = "+000000";
             }
         }
     void incrementTime(float time) {
@@ -288,14 +288,14 @@ int main(int, char**)
 
                 if (!result)
                 {
-                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
+                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 3);
 
-                    if (cmd == "10")
+                    if (cmd == "010")
                     {
                         currentWindow.waitingForRead = true;
                         currentWindow.setRunning(false);
                     }
-                    else if (cmd == "43")
+                    else if (cmd == "043")
                     {
                         currentWindow.setStopped(true);
                         currentWindow.setRunning(false);
@@ -307,26 +307,26 @@ int main(int, char**)
         }
 
         // Static variables for clipboard and context menu error state
-        static std::string copiedInstruction = "x0000";
+        static std::string copiedInstruction = "+000000";
         static std::string memoryErrorMsg = "";
 
         // Lambda to shift memory elements down (Insert)
         auto shiftDown = [&](int index) -> bool {
           //UPDATE CURRENT WINDOW TO DO SIMILAR THINGS TO THE MAX INDEX
             // Check if the last memory address is already occupied by a valid instruction
-            if (currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "x0000" && currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "+0000" && currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "") {
+            if (currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "+000000" && currentWindow.windowSim.memory[currentWindow.memorySize - 1] != "") {
                 return false; // Memory is full
             }
             for (int i = currentWindow.memorySize - 2; i >= index; i--) {
                 currentWindow.windowSim.memory[i + 1] = currentWindow.windowSim.memory[i];
             }
-            //if (Simulator.memory[max_index] != "x0000" && Simulator.memory[max_index] != "+0000" && Simulator.memory[max_index] != "") {
+            //if (Simulator.memory[max_index] != "+000000" && Simulator.memory[max_index] != "+0000" && Simulator.memory[max_index] != "") {
             //    return false; // Memory is full
             //}
             //for (int i = max_index - 1; i >= index; i--) {
             //    Simulator.memory[i + 1] = Simulator.memory[i];
             //}
-            currentWindow.windowSim.memory[index] = "x0000";
+            currentWindow.windowSim.memory[index] = "+000000";
             return true;
             };
 
@@ -336,13 +336,13 @@ int main(int, char**)
             for (int i = index; i < currentWindow.memorySize - 1; i++) {
                 currentWindow.windowSim.memory[i] = currentWindow.windowSim.memory[i + 1];
             }
-            currentWindow.windowSim.memory[currentWindow.memorySize - 1] = "x0000";
+            currentWindow.windowSim.memory[currentWindow.memorySize - 1] = "+000000";
          
           //ONCE CHANGED ABOVE, DELETE THIS STUFF BELOW
             //for (int i = index; i < max_index; i++) {
             //    Simulator.memory[i] = Simulator.memory[i + 1];
             //}
-            //Simulator.memory[max_index] = "x0000";
+            //Simulator.memory[max_index] = "+000000";
         };
 
         if (!memoryErrorMsg.empty()) {
@@ -418,7 +418,7 @@ int main(int, char**)
                         currentWindow.windowSim.memory[x] = copiedInstruction;
                     }
                     else {
-                        memoryErrorMsg = "Cannot paste: Memory is full (address 99 is occupied).";
+                        memoryErrorMsg = "Cannot paste: Memory is full (address 249 is occupied).";
                         //DELETE ONCE ABOVE IS LIKE THIS
                           //Simulator.memory[x] = copiedInstruction;
                     } //else {
@@ -473,13 +473,13 @@ int main(int, char**)
 
                 if (!result)
                 {
-                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 2);
+                    std::string cmd = currentWindow.windowSim.memory[currentWindow.windowSim.address].substr(1, 3);
 
-                    if (cmd == "10")
+                    if (cmd == "010")
                     {
                         currentWindow.waitingForRead = true;
                     }
-                    else if (cmd == "43")
+                    else if (cmd == "043")
                     {
                         currentWindow.setStopped(true);
                     }
@@ -507,9 +507,9 @@ int main(int, char**)
         ImGui::SameLine();
         if (ImGui::Button("Clear")) {
             for (size_t i = 0; i < currentWindow.memorySize; i++) {   //MAKE LEFT TO BE LIKE BELOW AND GO UNTIL MEMORY SIZE
-                currentWindow.windowSim.memory[i] = "x0000"; //resets all memory loactions to zero
+                currentWindow.windowSim.memory[i] = "+000000"; //resets all memory loactions to zero
             //for (size_t i = 0; i < memory_size; i++){ //DELETE LEFT ONCE ABOVE IS LIKE LEFT
-            //    Simulator.memory[i] = "x0000"; //resets all memory loactions to zero
+            //    Simulator.memory[i] = "+000000"; //resets all memory loactions to zero
             }
             //Stops the function for running and sets the address to 0
             currentWindow.setRunning(false);
@@ -599,9 +599,9 @@ int main(int, char**)
                 {
                     fileError = "";
                     currentWindow.windowSim.address = 0;
-                  //CHANGE SO THE CURRENTWINDOW HAS MEMORYSIZE INSTEAD OF JUST A STRICT 100
+                    //CHANGE SO THE CURRENTWINDOW HAS MEMORYSIZE INSTEAD OF JUST A STRICT 100
                     for (int i = 0; i < currentWindow.memorySize; i++) { 
-                        currentWindow.windowSim.memory[i] = "x0000"; 
+                        currentWindow.windowSim.memory[i] = "+000000"; 
                     }
         
 
@@ -615,7 +615,18 @@ int main(int, char**)
                             break;
                         }
 
-                        currentWindow.windowSim.memory[currentWindow.windowSim.address++] = line;
+                        //block to convert all 4 word files to 6 word, and error catch if the file is not in 4 or 6 word format
+                        if(line.length() == 7 || line == "-99999"){
+                            currentWindow.windowSim.memory[currentWindow.windowSim.address++] = line;
+                        }
+                        else if (line.length() == 5)
+                        {
+                            currentWindow.windowSim.memory[currentWindow.windowSim.address++] = currentWindow.windowSim.Convert(line);
+                        }
+                        else{
+                            fileError = "Error: File format is incorrect, please use a 4 or 6 digit word format";
+                            break;
+                        }
                     }
 
                     currentWindow.windowSim.address = 0;
@@ -701,23 +712,16 @@ int main(int, char**)
 
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr); // Added to bind the main render target before clearing and drawing
         //NEWCOLOR
-        //g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, activeBackgroundColor); // Added to clear the background using the user-selected RGB color
-        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Added to render the ImGui interface after clearing with the chosen custom color
-
         //this if statement makes the background green if isBackgroundGreen is true, and white if false
           //THIS WILL NEED TO CHANGE FOR WHEN THE CUSTOMIZE COLOR STUFF HAPPENS
-        if (currentWindow.isBackgroundGreen) {
-            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            //NEWCOLOR
-            //g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, uvuGreen);
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        }
-        else {
-            g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-            //NEWCOLOR
-            //g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, offColor);
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        }
+        ImVec4 col = currentWindow.isBackgroundGreen
+        ? ImVec4(0.298f, 0.447f, 0.114f, 1.0f)
+        : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+        float color[4] = { col.x, col.y, col.z, col.w };
+
+        g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, color);
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
         // Present
         HRESULT hr = g_pSwapChain->Present(1, 0);   // Present with vsync

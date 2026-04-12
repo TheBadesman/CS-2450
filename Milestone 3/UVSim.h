@@ -41,6 +41,9 @@ public:
 
     //runs the files and builds / returns the strings for the console
     bool Execute();
+
+    //converts the files from a four digit word to a 6 digit
+    std::string Convert(std::string oldWord);
 };
 
 #endif
