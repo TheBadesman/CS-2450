@@ -1,0 +1,11 @@
+# ninja log v7
+50	653	7976726262023913	CMakeFiles/UVSim.dir/imgui/misc/cpp/imgui_stdlib.cpp.obj	a2a6dbee4923edf5
+9	950	7976726261603945	CMakeFiles/UVSim.dir/UVSim.cpp.obj	428184a596bc69ed
+36	1915	7976726261883844	CMakeFiles/UVSim.dir/imgui/backends/imgui_impl_win32.cpp.obj	774281da90fcccf3
+24	2194	7976726261759780	CMakeFiles/UVSim.dir/imgui/imgui_tables.cpp.obj	6b7c3c67958b7ba2
+43	2238	7976726261943897	CMakeFiles/UVSim.dir/imgui/backends/imgui_impl_dx11.cpp.obj	73dfa68ddc1e6b95
+4	3261	7976726261558728	CMakeFiles/UVSim.dir/main.cpp.obj	51de3c9a35d2b769
+18	3330	7976726261694384	CMakeFiles/UVSim.dir/imgui/imgui_draw.cpp.obj	4eb38813fb35b13a
+30	3886	7976726261818711	CMakeFiles/UVSim.dir/imgui/imgui_widgets.cpp.obj	3e18a877b83f0043
+13	5931	7976726261654169	CMakeFiles/UVSim.dir/imgui/imgui.cpp.obj	fabed8e580ea9b9a
+5931	6154	7976726320827596	UVSim.exe	10efb54d4f18d89b
