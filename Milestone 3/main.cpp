@@ -520,10 +520,16 @@ int main(int, char**)
             currentWindow.windowSim.ClearOutput();
             currentWindow.openFile = false;
         }
+        static int redAmount = 76;
+        static int greenAmount = 114;
+        static int blueAmount = 29;
         ImGui::SameLine();
-        if (ImGui::Button("Color")) {
+        if (ImGui::Button("UVU Color")) {
             //switches the color from green to white or white to green
-            currentWindow.isBackgroundGreen = !currentWindow.isBackgroundGreen;
+            //currentWindow.isBackgroundGreen = !currentWindow.isBackgroundGreen;
+            redAmount = 76;
+            greenAmount = 114;
+            blueAmount = 29;
             //isBackgroundGreen = !isBackgroundGreen; // Removed because the code doesn't toggle
         }
         //NEWCOLOR
@@ -558,6 +564,9 @@ int main(int, char**)
             backgroundColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
         }*/
 
+        ImGui::SliderInt("Red", &redAmount, 0 , 255);
+        ImGui::SliderInt("Green", &greenAmount, 0, 255);
+        ImGui::SliderInt("Blue", &blueAmount, 0, 255);
 
         ImGui::End();
 
@@ -718,7 +727,12 @@ int main(int, char**)
         ? ImVec4(0.298f, 0.447f, 0.114f, 1.0f)
         : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        float color[4] = { col.x, col.y, col.z, col.w };
+        float redValue = redAmount / 255.0;
+        float greenValue = greenAmount / 255.0;
+        float blueValue = blueAmount / 255.0;
+        ImVec4 theBackgroundColor = ImVec4(redValue, greenValue, blueValue, 1.0f);
+
+        float color[4] = { theBackgroundColor.x, theBackgroundColor.y, theBackgroundColor.z, theBackgroundColor.w };
 
         g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, color);
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
