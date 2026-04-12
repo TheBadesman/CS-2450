@@ -128,6 +128,7 @@ FIELDS:
     8. done(bool): To see if program is done.
     9. consoleInput(string): For the console input. 
     10. isBackgroundGreen(bool): To see if background should be green or not.
+    11. memorySize(int): Checks the UVSim and sees how much memory it has.
 FUNCTIONS:
     1. incrementTime
          Purpose: Increments the time on the timer.
