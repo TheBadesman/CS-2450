@@ -34,6 +34,13 @@ add_executable(UVSim
     ${IMGUI_MISC}
 )
 
+# --Static Link to .dll files so they available to all .exes
+target_link_options(UVSim PRIVATE
+    -static
+    -static-libgcc
+    -static-libstdc++
+)
+
 # ---- Include directories ----
 target_include_directories(UVSim PRIVATE
     ${IMGUI_DIR}
